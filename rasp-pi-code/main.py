@@ -2,9 +2,11 @@ import json
 import threading
 import tkinter as tk
 import socket
+from time import sleep
 
 connected = False
 pc_connection = None
+pong_received = False
 
 root = tk.Tk()
 
@@ -12,14 +14,12 @@ photo = tk.PhotoImage(file="./res/turkeyDerp.png")
 
 
 def onclick(btn_id):
-    print('Connected? ', connected)
     if connected:
-        print(btn_id)
         pc_connection.send((json.dumps({"event": "click", "id": str(btn_id)}) + '\r\n').encode('ascii'))
 
 
 def parse_message(msg):
-    print(msg)
+    global pong_received
     event = msg['event']
     if event == 'set_grid':
         for widget in root.winfo_children():
@@ -30,11 +30,13 @@ def parse_message(msg):
             tk.Grid.rowconfigure(root, row, weight=1)
     elif event == 'set_btn':
         add_button(msg['id'], msg['y'], msg['x'], msg['color'])
+    elif event == 'pong':
+        pong_received = True
 
 
 def add_button(btn_id, row, col, color):
-    btn = tk.Button(root, image=photo, bg=color, command=lambda: onclick(btn_id))
-    btn.grid(row=row, column=col, sticky=tk.N + tk.S + tk.E + tk.W, padx=5, pady=5)
+    btn = tk.Button(root, image=photo, bg=color, activebackground=color, command=lambda: onclick(btn_id))
+    btn.grid(row=row, column=col, sticky=tk.NSEW, padx=5, pady=5)
 
 
 root.geometry("800x480")
@@ -48,6 +50,7 @@ def start_socket():
         print('Waiting for connection...')
         # Establish connection with client.
         c, addr = s.accept()
+        c.settimeout(5)
         print('Got connection from', addr)
         global connected, pc_connection
         connected = True
@@ -61,6 +64,8 @@ def start_socket():
                 msg = c.recv(16)
             except ConnectionResetError:
                 connected = False
+            except socket.timeout:
+                continue
 
             full_msg += msg
 
@@ -69,8 +74,25 @@ def start_socket():
                 parse_message(json.loads(json_msg))
 
 
+def start_ping_thread():
+    global connected, pong_received, pc_connection
+    if connected:
+        print((json.dumps({"event": "ping"}) + '\r\n').encode('ascii'))
+        pc_connection.send((json.dumps({"event": "ping"}) + '\r\n').encode('ascii'))
+        sleep(5)
+        if pong_received:
+            pong_received = False
+        else:
+            print("Pong not received back!")
+            connected = False
+    sleep(10)
+
+
 x = threading.Thread(target=start_socket)
 x.start()
+# TODO needs to be made thread safe
+# ping_thread = threading.Thread(target=start_ping_thread)
+# ping_thread.start()
 
 root.config(cursor="none")
 root.attributes('-fullscreen', True)

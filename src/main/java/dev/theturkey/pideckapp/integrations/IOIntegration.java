@@ -2,6 +2,7 @@ package dev.theturkey.pideckapp.integrations;
 
 import dev.theturkey.pideckapp.action.ActionsManager;
 import dev.theturkey.pideckapp.action.io.KeyAction;
+import dev.theturkey.pideckapp.action.io.SoundAction;
 import dev.theturkey.pideckapp.action.io.TypingAction;
 
 public class IOIntegration implements IIntegration
@@ -11,6 +12,7 @@ public class IOIntegration implements IIntegration
 	{
 		ActionsManager.registerAction(this, "type", new TypingAction());
 		ActionsManager.registerAction(this, "key", new KeyAction());
+		ActionsManager.registerAction(this, "sound", new SoundAction());
 	}
 
 	@Override

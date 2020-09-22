@@ -57,6 +57,11 @@ public class PiDeckConnection
 						case "click":
 							ProfileManager.getCurrentProfile().onButtonPress(json.get("id").getAsString());
 							break;
+						case "ping":
+							JsonObject pong = new JsonObject();
+							pong.addProperty("event", "pong");
+							sendMessage(pong);
+							break;
 						default:
 							System.out.println(responseLine);
 							break;

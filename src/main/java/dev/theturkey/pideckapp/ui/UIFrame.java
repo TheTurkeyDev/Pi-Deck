@@ -61,7 +61,22 @@ public class UIFrame extends JFrame
 		JPanel simContainer = new JPanel();
 		simContainer.setBackground(hex2Rgb("#212529"));
 		simContainer.add(screen);
-		add(simContainer, BorderLayout.CENTER);
+
+		JSplitPane sp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, simContainer, new InfoPanel());
+		sp.setContinuousLayout(true);
+		sp.setDividerSize(3);
+		sp.setBorder(BorderFactory.createEmptyBorder());
+
+		JSplitPane sp2 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new LeftPanel(), sp);
+		sp2.setContinuousLayout(true);
+		sp2.setDividerSize(3);
+		sp2.setBorder(BorderFactory.createEmptyBorder());
+
+		JSplitPane sp3 = new JSplitPane(JSplitPane.VERTICAL_SPLIT, sp2, new BottomPanel());
+
+		sp3.setContinuousLayout(true);
+		sp3.setDividerSize(1);
+		add(sp3, BorderLayout.CENTER);
 
 		setSize(1280, 720);
 
