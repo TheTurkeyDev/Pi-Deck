@@ -6,6 +6,6 @@ public class LeftPanel extends JPanel
 {
 	public LeftPanel()
 	{
-		setBackground(UIFrame.hex2Rgb("#343a40"));
+		setBackground(UIFrame.BACKGROUND_SECONDARY);
 	}
 }

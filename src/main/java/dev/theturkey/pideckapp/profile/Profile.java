@@ -3,6 +3,7 @@ package dev.theturkey.pideckapp.profile;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import dev.theturkey.pideckapp.Core;
+import dev.theturkey.pideckapp.Util;
 
 import java.util.HashMap;
 import java.util.List;
@@ -45,7 +46,13 @@ public class Profile
 
 	public Button getButtonAt(int x, int y)
 	{
-		return buttons.values().stream().filter(btn -> btn.getX() == x && btn.getY() == y).findFirst().orElse(null);
+		Button button = buttons.values().stream().filter(btn -> btn.getX() == x && btn.getY() == y).findFirst().orElse(null);
+		if(button == null)
+		{
+			button = new Button(x, y);
+			this.buttons.put(button.getID(), button);
+		}
+		return button;
 	}
 
 	public Button getButtonFromID(String id)

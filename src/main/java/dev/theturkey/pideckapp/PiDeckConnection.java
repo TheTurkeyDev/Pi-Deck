@@ -105,6 +105,17 @@ public class PiDeckConnection
 		}
 	}
 
+	public void updateButton(Button btn)
+	{
+		JsonObject json = new JsonObject();
+		json.addProperty("event", "set_btn");
+		json.addProperty("id", btn.getID());
+		json.addProperty("color", btn.getBgColor());
+		json.addProperty("x", btn.getX());
+		json.addProperty("y", btn.getY());
+		sendMessage(json);
+	}
+
 	public void close()
 	{
 		try

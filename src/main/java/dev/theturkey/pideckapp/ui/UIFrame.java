@@ -1,78 +1,103 @@
 package dev.theturkey.pideckapp.ui;
 
 import dev.theturkey.pideckapp.Core;
+import dev.theturkey.pideckapp.Util;
+import dev.theturkey.pideckapp.profile.ProfileManager;
 
 import javax.swing.*;
+import javax.swing.plaf.metal.MetalButtonUI;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 
 public class UIFrame extends JFrame
 {
-	private static SystemTray tray;
-	private static TrayIcon trayIcon;
+	public static final Color BACKGROUND_PRIMARY = Util.hex2Rgb("#212529");
+	public static final Color BACKGROUND_SECONDARY = Util.hex2Rgb("#343a40");
+	public static final Color TEXT_PRIMARY = Util.hex2Rgb("#d1d1d1");
+	public static final Color TEXT_LIGHT = Util.hex2Rgb("#ffffff");
+	public static final Color PRIMARY_MAIN = Util.hex2Rgb("#009FBF");
+
+	private SystemTray tray;
+	private TrayIcon trayIcon;
+
+	private SimScreen simScreen;
+	private InfoPanel infoPanel;
+
+	private JSplitPane sp;
+	private JSplitPane sp2;
+	private JSplitPane sp3;
 
 	public UIFrame()
 	{
-		SimScreen screen = new SimScreen();
+		simScreen = new SimScreen();
 
 		setLayout(new BorderLayout());
 
 		JPanel topBar = new JPanel();
-		topBar.setBackground(hex2Rgb("#212529"));
+		topBar.setBackground(UIFrame.BACKGROUND_PRIMARY);
 
 		JLabel rowsLabel = new JLabel("Rows");
-		rowsLabel.setForeground(hex2Rgb("#d1d1d1"));
+		rowsLabel.setForeground(UIFrame.TEXT_PRIMARY);
 		topBar.add(rowsLabel);
 		JSpinner rows = new JSpinner(new SpinnerNumberModel(2, 1, 10, 1));
-		rows.setBackground(hex2Rgb("#343a40"));
-		rows.setForeground(hex2Rgb("#d1d1d1"));
+		rows.setBackground(UIFrame.BACKGROUND_SECONDARY);
+		rows.setForeground(UIFrame.TEXT_PRIMARY);
 		rows.addChangeListener(e ->
 		{
-			screen.setRows((int) ((JSpinner) e.getSource()).getModel().getValue());
+			simScreen.setRows((int) ((JSpinner) e.getSource()).getModel().getValue());
 		});
 		rows.setSize(100, 25);
 		topBar.add(rows);
 
 		JLabel colsLabel = new JLabel("Columns");
-		colsLabel.setForeground(hex2Rgb("#d1d1d1"));
+		colsLabel.setForeground(UIFrame.TEXT_PRIMARY);
 		topBar.add(colsLabel);
 		JSpinner columns = new JSpinner(new SpinnerNumberModel(4, 1, 10, 1));
-		columns.setBackground(hex2Rgb("#343a40"));
-		columns.setForeground(hex2Rgb("#d1d1d1"));
+		columns.setBackground(UIFrame.BACKGROUND_SECONDARY);
+		columns.setForeground(UIFrame.TEXT_PRIMARY);
 		columns.addChangeListener(e ->
 		{
-			screen.setColumns((int) ((JSpinner) e.getSource()).getModel().getValue());
+			simScreen.setColumns((int) ((JSpinner) e.getSource()).getModel().getValue());
 		});
 		columns.setSize(100, 25);
 		topBar.add(columns);
 
 		JButton saveBtn = new JButton("SAVE");
+		saveBtn.setUI(new MetalButtonUI());
 		saveBtn.addActionListener(e -> Core.getPiDeck().updatePiDisplay());
 		saveBtn.getInsets().set(0, 5, 0, 5);
-		saveBtn.setForeground(hex2Rgb("#d1d1d1"));
-		saveBtn.setBackground(hex2Rgb("#343a40"));
+		saveBtn.setForeground(UIFrame.TEXT_LIGHT);
+		saveBtn.setBackground(UIFrame.PRIMARY_MAIN);
 		saveBtn.setOpaque(true);
-		saveBtn.setBorderPainted(false);
+		saveBtn.setFocusPainted(false);
 		topBar.add(saveBtn);
+
+		ImageIcon loading = new ImageIcon("./res/loading.gif");
+		ImageIcon check = new ImageIcon(Util.getScaledImage((new ImageIcon("./res/check_mark.png")).getImage(), 16, 16));
+		ImageIcon xmark = new ImageIcon(Util.getScaledImage((new ImageIcon("./res/x_mark.png")).getImage(), 16, 16));
+		topBar.add(new JLabel("", xmark, JLabel.CENTER));
 
 		add(topBar, BorderLayout.PAGE_START);
 
 		JPanel simContainer = new JPanel();
-		simContainer.setBackground(hex2Rgb("#212529"));
-		simContainer.add(screen);
+		simContainer.setBackground(UIFrame.BACKGROUND_PRIMARY);
+		simContainer.add(simScreen);
 
-		JSplitPane sp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, simContainer, new InfoPanel());
+		infoPanel = new InfoPanel();
+		sp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, simContainer, infoPanel);
 		sp.setContinuousLayout(true);
 		sp.setDividerSize(3);
 		sp.setBorder(BorderFactory.createEmptyBorder());
+		sp.setResizeWeight(1.0);
 
-		JSplitPane sp2 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new LeftPanel(), sp);
+		sp2 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new LeftPanel(), sp);
 		sp2.setContinuousLayout(true);
 		sp2.setDividerSize(3);
 		sp2.setBorder(BorderFactory.createEmptyBorder());
 
-		JSplitPane sp3 = new JSplitPane(JSplitPane.VERTICAL_SPLIT, sp2, new BottomPanel());
+		sp3 = new JSplitPane(JSplitPane.VERTICAL_SPLIT, sp2, new BottomPanel());
 
 		sp3.setContinuousLayout(true);
 		sp3.setDividerSize(1);
@@ -159,15 +184,19 @@ public class UIFrame extends JFrame
 			}
 		});
 		setIconImage(Toolkit.getDefaultToolkit().getImage("./res/turkeyDerp.png"));
+
+		System.out.println("UI DONE");
 	}
 
-	public static Color hex2Rgb(String colorStr)
+	public void setInfoPanelButton(String buttonID)
 	{
-		if(colorStr.startsWith("#"))
-			colorStr = colorStr.substring(1);
-		return new Color(
-				Integer.valueOf(colorStr.substring(0, 2), 16),
-				Integer.valueOf(colorStr.substring(2, 4), 16),
-				Integer.valueOf(colorStr.substring(4, 6), 16));
+		infoPanel.setInfoPanelButton(ProfileManager.getCurrentProfile().getButtonFromID(buttonID));
+		sp.resetToPreferredSizes();
+	}
+
+	public void updateSim()
+	{
+		//TODO: This is gross and very not efficient
+		simScreen.setupButtons();
 	}
 }

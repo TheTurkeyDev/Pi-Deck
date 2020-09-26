@@ -31,7 +31,6 @@ public class Core
 			e.printStackTrace();
 		}
 
-
 		pideck = new PiDeckConnection();
 		pideck.connect();
 
@@ -43,6 +42,7 @@ public class Core
 			System.out.println("Unable to set LookAndFeel");
 		}
 
+		System.out.println("UI");
 		ui = new UIFrame();
 	}
 
@@ -59,5 +59,10 @@ public class Core
 	public static PiDeckConnection getPiDeck()
 	{
 		return pideck;
+	}
+
+	public static UIFrame getUI()
+	{
+		return ui;
 	}
 }

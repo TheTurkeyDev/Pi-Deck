@@ -6,6 +6,6 @@ public class BottomPanel extends JPanel
 {
 	public BottomPanel()
 	{
-		setBackground(UIFrame.hex2Rgb("#343a40"));
+		setBackground(UIFrame.BACKGROUND_SECONDARY);
 	}
 }

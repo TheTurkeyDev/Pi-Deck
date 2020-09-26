@@ -2,8 +2,10 @@ package dev.theturkey.pideckapp.profile;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import dev.theturkey.pideckapp.Util;
 import dev.theturkey.pideckapp.action.ActionsManager;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,9 +14,16 @@ public class Button
 	private String id;
 	private String imageSrc = "";
 	private String bgColor = "";
-	private List<ActionInfo> actions;
+	private List<ActionInfo> actions = new ArrayList<>();
 	private int x;
 	private int y;
+
+	public Button(int x, int y)
+	{
+		this.id = Util.genUUID();
+		this.x = x;
+		this.y = y;
+	}
 
 	public Button(String id, JsonObject json)
 	{
@@ -50,6 +59,11 @@ public class Button
 		return this.bgColor;
 	}
 
+	public void setBgColor(Color color)
+	{
+		this.bgColor = "#" + Integer.toHexString(color.getRGB()).substring(2);
+	}
+
 	public int getX()
 	{
 		return this.x;
@@ -63,5 +77,10 @@ public class Button
 	public String getID()
 	{
 		return this.id;
+	}
+
+	public List<ActionInfo> getActions()
+	{
+		return this.actions;
 	}
 }
