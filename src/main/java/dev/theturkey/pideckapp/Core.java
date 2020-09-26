@@ -1,13 +1,11 @@
 package dev.theturkey.pideckapp;
 
+import dev.theturkey.pideckapp.config.Config;
 import dev.theturkey.pideckapp.integrations.IOIntegration;
 import dev.theturkey.pideckapp.profile.ProfileManager;
 import dev.theturkey.pideckapp.ui.UIFrame;
 
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.io.FileNotFoundException;
 
 public class Core
 {
@@ -20,16 +18,15 @@ public class Core
 
 	public static void main(String[] args)
 	{
-
-		try
+		if(!Config.init())
 		{
-			IOIntegration ioIntegration = new IOIntegration();
-			ioIntegration.load();
-			ProfileManager.loadProfiles();
-		} catch(FileNotFoundException e)
-		{
-			e.printStackTrace();
+			System.err.println("FAILED TO START! Could not create configs and save files!");
+			return;
 		}
+
+		IOIntegration ioIntegration = new IOIntegration();
+		ioIntegration.load();
+		ProfileManager.loadProfiles();
 
 		pideck = new PiDeckConnection();
 		pideck.connect();
@@ -44,16 +41,6 @@ public class Core
 
 		System.out.println("UI");
 		ui = new UIFrame();
-	}
-
-	public static void sendKey(Robot robot, int key, boolean shift)
-	{
-		if(shift)
-			robot.keyPress(KeyEvent.VK_SHIFT);
-		robot.keyPress(key);
-		robot.keyRelease(key);
-		if(shift)
-			robot.keyRelease(KeyEvent.VK_SHIFT);
 	}
 
 	public static PiDeckConnection getPiDeck()

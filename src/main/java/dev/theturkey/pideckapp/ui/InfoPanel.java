@@ -3,6 +3,8 @@ package dev.theturkey.pideckapp.ui;
 
 import dev.theturkey.pideckapp.Core;
 import dev.theturkey.pideckapp.Util;
+import dev.theturkey.pideckapp.config.Config;
+import dev.theturkey.pideckapp.profile.ActionInfo;
 import dev.theturkey.pideckapp.profile.Button;
 
 import javax.swing.*;
@@ -16,7 +18,7 @@ public class InfoPanel extends JPanel
 	private JLabel buttonIDLabel;
 	private JButton bgColorButton;
 
-	private ActionPanel actionPanel;
+	private JPanel actionsPanel;
 
 
 	public InfoPanel()
@@ -63,7 +65,7 @@ public class InfoPanel extends JPanel
 				currentBtn.setBgColor(newColor);
 				Core.getPiDeck().updateButton(currentBtn);
 				Core.getUI().updateSim();
-				//TODO: persist to file
+				Config.saveProfiles();
 			}
 		});
 		colorPanel.add(bgColorButton);
@@ -74,7 +76,7 @@ public class InfoPanel extends JPanel
 		gbc.gridy = 1;
 		add(colorPanel, gbc);
 
-		JPanel actionsPanel = new JPanel();
+		actionsPanel = new JPanel();
 		actionsPanel.setLayout(new BoxLayout(actionsPanel, BoxLayout.Y_AXIS));
 		actionsPanel.setBackground(UIFrame.BACKGROUND_PRIMARY);
 
@@ -91,13 +93,16 @@ public class InfoPanel extends JPanel
 		addAction.setUI(new MetalButtonUI());
 		addAction.setOpaque(true);
 		addAction.setFocusPainted(false);
+		addAction.addActionListener(e ->
+		{
+			currentBtn.addAction(new ActionInfo());
+			Config.saveProfiles();
+			updateActionsPanel();
+			updateUI();
+		});
 		actionsPanelTopBar.add(addAction);
 
 		actionsPanel.add(actionsPanelTopBar);
-
-		actionPanel = new ActionPanel();
-		actionPanel.getInsets().set(5, 5, 5, 5);
-		actionsPanel.add(actionPanel);
 
 		gbc = new GridBagConstraints();
 		gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -121,10 +126,21 @@ public class InfoPanel extends JPanel
 		buttonIDLabel.setText("Button: " + button.getID());
 
 		bgColorButton.setBackground(Util.hex2Rgb(button.getBgColor()));
-		actionPanel.setAction(button.getActions().get(0));
+
+		updateActionsPanel();
 
 		setPreferredSize(new Dimension(150, getHeight()));
 		setVisible(true);
 		updateUI();
+	}
+
+	public void updateActionsPanel()
+	{
+		for(int i = actionsPanel.getComponentCount() - 1; i >= 0; i--)
+			if(actionsPanel.getComponent(i) instanceof ActionPanel)
+				actionsPanel.remove(i);
+
+		for(ActionInfo action : currentBtn.getActions())
+			actionsPanel.add(new ActionPanel(this, currentBtn, action));
 	}
 }

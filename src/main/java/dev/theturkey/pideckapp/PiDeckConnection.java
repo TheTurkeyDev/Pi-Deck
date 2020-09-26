@@ -118,8 +118,12 @@ public class PiDeckConnection
 
 	public void close()
 	{
+		if(os == null)
+			return;
+
 		try
 		{
+
 			os.close();
 			is.close();
 			clientSocket.close();

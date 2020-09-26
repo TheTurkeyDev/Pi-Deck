@@ -1,9 +1,12 @@
 package dev.theturkey.pideckapp.action.io;
 
 import dev.theturkey.pideckapp.action.BaseAction;
+import dev.theturkey.pideckapp.integrations.ActionProperty;
 import dev.theturkey.pideckapp.profile.ActionInfo;
 
 import java.awt.*;
+import java.util.Arrays;
+import java.util.List;
 
 import static java.awt.event.KeyEvent.*;
 
@@ -16,7 +19,8 @@ public class KeyAction extends BaseAction
 		try
 		{
 			Robot robot = new Robot();
-			robot.setAutoDelay(50);
+			int delay = Integer.parseInt(info.getProps().getOrDefault("step_delay", "50"));
+			robot.setAutoDelay(delay);
 			int key = getKey(info.getProps().getOrDefault("key", ""));
 			boolean press = Boolean.parseBoolean(info.getProps().getOrDefault("press", ""));
 			boolean release = Boolean.parseBoolean(info.getProps().getOrDefault("release", ""));
@@ -222,5 +226,16 @@ public class KeyAction extends BaseAction
 			default:
 				return -1;
 		}
+	}
+
+	@Override
+	public List<ActionProperty> getPropDefs()
+	{
+		return Arrays.asList(
+				new ActionProperty("key", ActionProperty.PropType.STRING, "F13"),
+				new ActionProperty("press", ActionProperty.PropType.BOOLEAN, "true"),
+				new ActionProperty("release", ActionProperty.PropType.BOOLEAN, "false"),
+				new ActionProperty("step_delay", ActionProperty.PropType.INTEGER, "50")
+		);
 	}
 }

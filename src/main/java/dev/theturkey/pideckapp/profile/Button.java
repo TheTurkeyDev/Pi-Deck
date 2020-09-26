@@ -1,5 +1,6 @@
 package dev.theturkey.pideckapp.profile;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import dev.theturkey.pideckapp.Util;
@@ -48,6 +49,21 @@ public class Button
 					actions.add(new ActionInfo(actionElem.getAsJsonObject()));
 	}
 
+	public JsonObject saveButton()
+	{
+		JsonObject json = new JsonObject();
+		json.addProperty("x", this.getX());
+		json.addProperty("y", this.getY());
+		json.addProperty("img", this.imageSrc);
+		json.addProperty("bg_color", this.getBgColor());
+		JsonArray actionsArray = new JsonArray();
+		for(ActionInfo action : actions)
+			actionsArray.add(action.saveAction());
+		json.add("actions", actionsArray);
+
+		return json;
+	}
+
 	public void onClick()
 	{
 		for(ActionInfo actionInfo : actions)
@@ -82,5 +98,15 @@ public class Button
 	public List<ActionInfo> getActions()
 	{
 		return this.actions;
+	}
+
+	public void addAction(ActionInfo actionInfo)
+	{
+		this.actions.add(actionInfo);
+	}
+
+	public void removeAction(ActionInfo actionInfo)
+	{
+		this.actions.remove(actionInfo);
 	}
 }

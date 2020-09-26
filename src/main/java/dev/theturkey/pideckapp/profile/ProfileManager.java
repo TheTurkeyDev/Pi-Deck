@@ -1,12 +1,10 @@
 package dev.theturkey.pideckapp.profile;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import dev.theturkey.pideckapp.config.Config;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.util.HashMap;
 
 public class ProfileManager
@@ -15,9 +13,9 @@ public class ProfileManager
 
 	private static Profile currentProfile;
 
-	public static void loadProfiles() throws FileNotFoundException
+	public static void loadProfiles()
 	{
-		JsonElement jsonElement = JsonParser.parseReader(new FileReader(new File("./res/save.json")));
+		JsonElement jsonElement = Config.loadProfiles();
 		if(jsonElement.isJsonObject())
 		{
 			JsonObject json = jsonElement.getAsJsonObject();
@@ -32,9 +30,32 @@ public class ProfileManager
 					}
 				}
 			}
-		}
 
-		currentProfile = PROFILES.get("Profile 1");
+			String currentProfileJson = json.has("Current Profile") ? json.get("Current Profile").getAsString() : "";
+
+			if(currentProfileJson.isEmpty() || !PROFILES.containsKey(currentProfileJson))
+			{
+				currentProfile = PROFILES.get(PROFILES.keySet().stream().findFirst().orElseThrow(() -> new RuntimeException("Missing Profiles Exception")));
+				Config.saveProfiles();
+			}
+			else
+			{
+				currentProfile = PROFILES.get(currentProfileJson);
+			}
+		}
+	}
+
+	public static JsonObject saveProfiles()
+	{
+		JsonObject save = new JsonObject();
+		JsonArray profilesArray = new JsonArray();
+		for(Profile profile : PROFILES.values())
+			profilesArray.add(profile.saveProfile());
+
+		save.add("Profiles", profilesArray);
+		save.addProperty("Current Profile", currentProfile.getName());
+
+		return save;
 	}
 
 	public static Profile getCurrentProfile()

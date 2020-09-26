@@ -1,6 +1,7 @@
 package dev.theturkey.pideckapp.action.io;
 
 import dev.theturkey.pideckapp.action.BaseAction;
+import dev.theturkey.pideckapp.integrations.ActionProperty;
 import dev.theturkey.pideckapp.profile.ActionInfo;
 
 import javax.sound.sampled.AudioInputStream;
@@ -8,6 +9,8 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.FloatControl;
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 
 public class SoundAction extends BaseAction
 {
@@ -28,5 +31,14 @@ public class SoundAction extends BaseAction
 		{
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public List<ActionProperty> getPropDefs()
+	{
+		return Arrays.asList(
+				new ActionProperty("file", ActionProperty.PropType.FILE, ""),
+				new ActionProperty("gain", ActionProperty.PropType.DOUBLE, "0")
+		);
 	}
 }

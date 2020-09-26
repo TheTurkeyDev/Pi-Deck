@@ -3,7 +3,6 @@ package dev.theturkey.pideckapp.profile;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import dev.theturkey.pideckapp.Core;
-import dev.theturkey.pideckapp.Util;
 
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +31,19 @@ public class Profile
 		if(json.has("buttons") && json.get("buttons").isJsonObject())
 			for(Map.Entry<String, JsonElement> btn : json.getAsJsonObject("buttons").entrySet())
 				this.buttons.put(btn.getKey(), new Button(btn.getKey(), btn.getValue().getAsJsonObject()));
+	}
+
+	public JsonObject saveProfile()
+	{
+		JsonObject json = new JsonObject();
+		json.addProperty("name", this.getName());
+		JsonObject buttonsJson = new JsonObject();
+		for(Button btn : buttons.values())
+			buttonsJson.add(btn.getID(), btn.saveButton());
+
+		json.add("buttons", buttonsJson);
+
+		return json;
 	}
 
 	public String getName()
