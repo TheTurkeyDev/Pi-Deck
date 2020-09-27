@@ -66,7 +66,7 @@ public class ActionPanel extends JPanel
 
 		JButton removeBtn = new JButton();
 		removeBtn.setPreferredSize(new Dimension(20, 16));
-		removeBtn.setIcon(new ImageIcon(Util.getScaledImage((new ImageIcon("./res/x_mark.png")).getImage(), 16, 16)));
+		removeBtn.setIcon(new ImageIcon(Util.getScaledImage(new ImageIcon(Util.getRes("icons/x_mark.png")).getImage(), 16, 16)));
 		removeBtn.addActionListener(e ->
 		{
 			btn.removeAction(action);

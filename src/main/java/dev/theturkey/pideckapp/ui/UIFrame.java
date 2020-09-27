@@ -72,9 +72,9 @@ public class UIFrame extends JFrame
 		saveBtn.setFocusPainted(false);
 		topBar.add(saveBtn);
 
-		ImageIcon loading = new ImageIcon("./res/loading.gif");
-		ImageIcon check = new ImageIcon(Util.getScaledImage((new ImageIcon("./res/check_mark.png")).getImage(), 16, 16));
-		ImageIcon xmark = new ImageIcon(Util.getScaledImage((new ImageIcon("./res/x_mark.png")).getImage(), 16, 16));
+		ImageIcon loading = new ImageIcon(Util.getRes("loading.gif"));
+		ImageIcon check = new ImageIcon(Util.getScaledImage((new ImageIcon(Util.getRes("icons/check_mark.png"))).getImage(), 16, 16));
+		ImageIcon xmark = new ImageIcon(Util.getScaledImage((new ImageIcon(Util.getRes("icons/x_mark.png"))).getImage(), 16, 16));
 		topBar.add(new JLabel("", xmark, JLabel.CENTER));
 
 		add(topBar, BorderLayout.PAGE_START);
@@ -118,7 +118,7 @@ public class UIFrame extends JFrame
 		{
 			tray = SystemTray.getSystemTray();
 
-			Image image = Toolkit.getDefaultToolkit().getImage("./res/turkeyDerp.png");
+			Image image = Toolkit.getDefaultToolkit().getImage(Util.getRes("turkeyDerp.png"));
 			PopupMenu popup = new PopupMenu();
 			MenuItem defaultItem = new MenuItem("Exit");
 			defaultItem.addActionListener(e ->
@@ -176,7 +176,7 @@ public class UIFrame extends JFrame
 				setVisible(true);
 			}
 		});
-		setIconImage(Toolkit.getDefaultToolkit().getImage("./res/turkeyDerp.png"));
+		setIconImage(Toolkit.getDefaultToolkit().getImage(Util.getRes("turkeyDerp.png")));
 
 		System.out.println("UI DONE");
 	}

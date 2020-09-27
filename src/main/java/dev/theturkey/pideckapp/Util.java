@@ -2,6 +2,7 @@ package dev.theturkey.pideckapp;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.net.URL;
 import java.util.UUID;
 
 public class Util
@@ -36,5 +37,10 @@ public class Util
 	public static String genUUID()
 	{
 		return UUID.randomUUID().toString();
+	}
+
+	public static URL getRes(String path)
+	{
+		return Util.class.getClassLoader().getResource(path);
 	}
 }
