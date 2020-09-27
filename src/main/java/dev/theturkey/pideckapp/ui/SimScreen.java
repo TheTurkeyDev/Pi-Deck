@@ -1,6 +1,7 @@
 package dev.theturkey.pideckapp.ui;
 
-import dev.theturkey.pideckapp.Core;
+import dev.theturkey.pideckapp.config.Config;
+import dev.theturkey.pideckapp.profile.Profile;
 import dev.theturkey.pideckapp.profile.ProfileManager;
 
 import javax.swing.*;
@@ -22,21 +23,24 @@ public class SimScreen extends JPanel
 
 	public void setRows(int newRowCount)
 	{
-		Core.displayRows = newRowCount;
+		ProfileManager.getCurrentProfile().setRows(newRowCount);
+		Config.saveProfiles();
 		setupButtons();
 	}
 
 	public void setColumns(int newColumnCount)
 	{
-		Core.displayColumns = newColumnCount;
+		ProfileManager.getCurrentProfile().setColumns(newColumnCount);
+		Config.saveProfiles();
 		setupButtons();
 	}
 
 	public void setupButtons()
 	{
 		removeAll();
-		for(int y = 0; y < Core.displayRows; y++)
-			for(int x = 0; x < Core.displayColumns; x++)
+		Profile profile = ProfileManager.getCurrentProfile();
+		for(int y = 0; y < profile.getRows(); y++)
+			for(int x = 0; x < profile.getColumns(); x++)
 				addButton(x, y);
 		updateUI();
 	}

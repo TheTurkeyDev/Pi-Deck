@@ -1,5 +1,5 @@
 import json
-import threading
+from threading import Thread
 import tkinter as tk
 import socket
 from time import sleep
@@ -76,23 +76,23 @@ def start_socket():
 
 def start_ping_thread():
     global connected, pong_received, pc_connection
-    if connected:
-        print((json.dumps({"event": "ping"}) + '\r\n').encode('ascii'))
-        pc_connection.send((json.dumps({"event": "ping"}) + '\r\n').encode('ascii'))
-        sleep(5)
-        if pong_received:
-            pong_received = False
-        else:
-            print("Pong not received back!")
-            connected = False
-    sleep(10)
+    while True:
+        if connected:
+            print((json.dumps({"event": "ping"}) + '\r\n').encode('ascii'))
+            pc_connection.send((json.dumps({"event": "ping"}) + '\r\n').encode('ascii'))
+            sleep(5)
+            if pong_received:
+                pong_received = False
+            else:
+                connected = False
+        sleep(10)
 
 
-x = threading.Thread(target=start_socket)
+x = Thread(target=start_socket)
 x.start()
 # TODO needs to be made thread safe
-# ping_thread = threading.Thread(target=start_ping_thread)
-# ping_thread.start()
+ping_thread = Thread(target=start_ping_thread)
+ping_thread.start()
 
 root.config(cursor="none")
 root.attributes('-fullscreen', True)

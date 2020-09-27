@@ -69,6 +69,7 @@ public class InfoPanel extends JPanel
 			}
 		});
 		colorPanel.add(bgColorButton);
+
 		colorPanel.setMaximumSize(getSize());
 
 		gbc = new GridBagConstraints();

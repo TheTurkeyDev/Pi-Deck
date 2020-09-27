@@ -85,11 +85,12 @@ public class PiDeckConnection
 	{
 		JsonObject json = new JsonObject();
 		json.addProperty("event", "set_grid");
-		json.addProperty("columns", Core.displayColumns);
-		json.addProperty("rows", Core.displayColumns);
-		sendMessage(json);
 
 		Profile profile = ProfileManager.getCurrentProfile();
+		json.addProperty("columns", profile.getColumns());
+		json.addProperty("rows", profile.getRows());
+		sendMessage(json);
+
 		for(Button btn : profile.getVisibleButtons())
 		{
 			if(!btn.getBgColor().isEmpty())

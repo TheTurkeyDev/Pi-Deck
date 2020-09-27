@@ -2,7 +2,6 @@ package dev.theturkey.pideckapp.profile;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import dev.theturkey.pideckapp.Core;
 
 import java.util.HashMap;
 import java.util.List;
@@ -14,18 +13,18 @@ public class Profile
 	private String name;
 	private Map<String, Button> buttons;
 	private List<String> visibleButtons;
-
-	public Profile(String name, Map<String, Button> buttons, List<String> initalButtons)
-	{
-		this.name = name;
-		this.buttons = buttons;
-		this.visibleButtons = initalButtons;
-	}
+	private int columns;
+	private int rows;
 
 	public Profile(JsonObject json)
 	{
 		if(json.has("name"))
 			this.name = json.get("name").getAsString();
+
+		if(json.has("columns"))
+			this.columns = json.get("columns").getAsInt();
+		if(json.has("rows"))
+			this.rows = json.get("rows").getAsInt();
 
 		this.buttons = new HashMap<>();
 		if(json.has("buttons") && json.get("buttons").isJsonObject())
@@ -37,6 +36,9 @@ public class Profile
 	{
 		JsonObject json = new JsonObject();
 		json.addProperty("name", this.getName());
+		json.addProperty("rows", rows);
+		json.addProperty("columns", columns);
+
 		JsonObject buttonsJson = new JsonObject();
 		for(Button btn : buttons.values())
 			buttonsJson.add(btn.getID(), btn.saveButton());
@@ -53,7 +55,7 @@ public class Profile
 
 	public List<Button> getVisibleButtons()
 	{
-		return buttons.values().stream().filter(btn -> btn.getX() < Core.displayColumns && btn.getY() < Core.displayRows).collect(Collectors.toList());
+		return buttons.values().stream().filter(btn -> btn.getX() < columns && btn.getY() < rows).collect(Collectors.toList());
 	}
 
 	public Button getButtonAt(int x, int y)
@@ -75,5 +77,25 @@ public class Profile
 	public void onButtonPress(String buttonID)
 	{
 		buttons.get(buttonID).onClick();
+	}
+
+	public int getColumns()
+	{
+		return columns;
+	}
+
+	public void setColumns(int columns)
+	{
+		this.columns = columns;
+	}
+
+	public int getRows()
+	{
+		return rows;
+	}
+
+	public void setRows(int rows)
+	{
+		this.rows = rows;
 	}
 }

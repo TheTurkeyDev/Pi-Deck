@@ -25,7 +25,6 @@ public class UIFrame extends JFrame
 	private InfoPanel infoPanel;
 
 	private JSplitPane sp;
-	private JSplitPane sp2;
 	private JSplitPane sp3;
 
 	public UIFrame()
@@ -91,12 +90,7 @@ public class UIFrame extends JFrame
 		sp.setBorder(BorderFactory.createEmptyBorder());
 		sp.setResizeWeight(1.0);
 
-		sp2 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new LeftPanel(), sp);
-		sp2.setContinuousLayout(true);
-		sp2.setDividerSize(3);
-		sp2.setBorder(BorderFactory.createEmptyBorder());
-
-		sp3 = new JSplitPane(JSplitPane.VERTICAL_SPLIT, sp2, new BottomPanel());
+		sp3 = new JSplitPane(JSplitPane.VERTICAL_SPLIT, sp, new BottomPanel());
 
 		sp3.setContinuousLayout(true);
 		sp3.setDividerSize(1);

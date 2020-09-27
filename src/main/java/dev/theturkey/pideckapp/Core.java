@@ -12,10 +12,6 @@ public class Core
 	private static PiDeckConnection pideck;
 	private static UIFrame ui;
 
-	//I don't like this, but idk what else to do
-	public static int displayRows = 2;
-	public static int displayColumns = 4;
-
 	public static void main(String[] args)
 	{
 		if(!Config.init())

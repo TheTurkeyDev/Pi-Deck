@@ -129,7 +129,7 @@ public class ActionPanel extends JPanel
 					});
 					break;
 				case DOUBLE:
-					component = new JSpinner(new SpinnerNumberModel(Float.parseFloat(val), Integer.MIN_VALUE, Float.MAX_VALUE, 0.01));
+					component = new JSpinner(new SpinnerNumberModel(Float.parseFloat(val), Integer.MIN_VALUE, Integer.MAX_VALUE, 0.01));
 					((JSpinner) component).addChangeListener(e ->
 					{
 						action.setPropsValue(prop.key, String.valueOf(((JSpinner) component).getModel().getValue()));
@@ -138,7 +138,6 @@ public class ActionPanel extends JPanel
 					break;
 				case BOOLEAN:
 					component = new JCheckBox("", Boolean.parseBoolean(val));
-
 					((JCheckBox) component).addItemListener(e ->
 					{
 						action.setPropsValue(prop.key, String.valueOf(((JCheckBox) component).isSelected()));
