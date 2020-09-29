@@ -13,6 +13,7 @@ import java.util.List;
 public class Button
 {
 	private String id;
+	private String text = "";
 	private String imageSrc = "";
 	private String bgColor = "";
 	private List<ActionInfo> actions = new ArrayList<>();
@@ -39,6 +40,9 @@ public class Button
 		if(json.has("img") && json.get("img").isJsonPrimitive())
 			imageSrc = json.get("img").getAsString();
 
+		if(json.has("text") && json.get("text").isJsonPrimitive())
+			text = json.get("text").getAsString();
+
 		if(json.has("bg_color") && json.get("bg_color").isJsonPrimitive())
 			bgColor = json.get("bg_color").getAsString();
 
@@ -57,6 +61,7 @@ public class Button
 		json.addProperty("img", this.imageSrc);
 		json.addProperty("bg_color", this.getBgColor());
 		json.addProperty("img", this.getImageSrc());
+		json.addProperty("text", this.getText());
 		JsonArray actionsArray = new JsonArray();
 		for(ActionInfo action : actions)
 			actionsArray.add(action.saveAction());
@@ -119,5 +124,15 @@ public class Button
 	public void setImageSrc(String path)
 	{
 		this.imageSrc = path;
+	}
+
+	public String getText()
+	{
+		return text;
+	}
+
+	public void setText(String text)
+	{
+		this.text = text;
 	}
 }

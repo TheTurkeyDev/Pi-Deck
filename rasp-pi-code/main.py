@@ -1,8 +1,12 @@
+import base64
+import io
 import json
 from threading import Thread
 import tkinter as tk
 import socket
 from time import sleep
+
+from PIL import Image, ImageTk
 
 connected = False
 pc_connection = None
@@ -10,38 +14,55 @@ pong_received = False
 
 root = tk.Tk()
 
-photo = tk.PhotoImage(file="./res/turkeyDerp.png")
-
 
 def onclick(btn_id):
     if connected:
         pc_connection.send((json.dumps({"event": "click", "id": str(btn_id)}) + '\r\n').encode('ascii'))
 
 
-def clearScreen():
- for widget in root.winfo_children():
-            widget.destroy()
+def clear_screen():
+    for widget in root.winfo_children():
+        widget.destroy()
+
 
 def parse_message(msg):
     global pong_received
     event = msg['event']
     if event == 'set_grid':
-        clearScreen()
+        clear_screen()
         for col in range(msg['columns']):
-            tk.Grid.columnconfigure(root, col, weight=1)
+            tk.Grid.columnconfigure(root, col, weight=1, uniform="grid_with")
         for row in range(msg['rows']):
-            tk.Grid.rowconfigure(root, row, weight=1)
+            tk.Grid.rowconfigure(root, row, weight=1, uniform="grid_height")
     elif event == 'disconnect':
-         clearScreen()
+        clear_screen()
     elif event == 'set_btn':
-        add_button(msg['id'], msg['y'], msg['x'], msg['color'])
+        add_button(msg['id'], msg['y'], msg['x'], msg['color'], msg['text'], msg['image'])
     elif event == 'pong':
         pong_received = True
 
 
-def add_button(btn_id, row, col, color):
-    btn = tk.Button(root, image=photo, bg=color, activebackground=color, command=lambda: onclick(btn_id))
+def place_image(btn, image):
+    msg = base64.b64decode(image)
+    buf = io.BytesIO(msg)
+    img = Image.open(buf)
+    img = img.resize((btn.winfo_width(), btn.winfo_height()), Image.ANTIALIAS)
+    photo_img = ImageTk.PhotoImage(img)
+    # Why do we set it twice???? IDK, but it doesn't work if we don't 🙃
+    btn.configure(image=photo_img)
+    btn.image = photo_img
+
+
+def add_button(btn_id, row, col, color, text, image):
+    btn = tk.Button(root, bg=color, activebackground=color, borderwidth=0, command=lambda: onclick(btn_id))
+    if image:
+        # Hack to wait for the button size to get applied... IDK what the "right" way is
+        btn.after(200, lambda: place_image(btn, image))
+
+    else:
+        btn['text'] = text
     btn.grid(row=row, column=col, sticky=tk.NSEW, padx=5, pady=5)
+    btn.update()
 
 
 root.geometry("800x480")
@@ -78,7 +99,7 @@ def start_socket():
                 json_msg, full_msg = full_msg.split(b'\n', 1)
                 parse_message(json.loads(json_msg))
 
-        clearScreen()
+        clear_screen()
 
 
 def start_ping_thread():
@@ -96,10 +117,10 @@ def start_ping_thread():
                     pong_received = False
                     fails = 0
                 else:
-                    fails+=1
+                    fails += 1
                     if fails == 3:
                         connected = False
-            except(BrokenPipeError):
+            except BrokenPipeError:
                 connected = False
                 fails = 0
         sleep(5)

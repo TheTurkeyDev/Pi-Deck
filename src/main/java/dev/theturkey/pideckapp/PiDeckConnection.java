@@ -8,6 +8,7 @@ import dev.theturkey.pideckapp.profile.ProfileManager;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
@@ -92,18 +93,8 @@ public class PiDeckConnection
 		sendMessage(json);
 
 		for(Button btn : profile.getVisibleButtons())
-		{
 			if(!btn.getBgColor().isEmpty())
-			{
-				json = new JsonObject();
-				json.addProperty("event", "set_btn");
-				json.addProperty("id", btn.getID());
-				json.addProperty("color", btn.getBgColor());
-				json.addProperty("x", btn.getX());
-				json.addProperty("y", btn.getY());
-				sendMessage(json);
-			}
-		}
+				updateButton(btn);
 	}
 
 	public void updateButton(Button btn)
@@ -112,8 +103,15 @@ public class PiDeckConnection
 		json.addProperty("event", "set_btn");
 		json.addProperty("id", btn.getID());
 		json.addProperty("color", btn.getBgColor());
+		json.addProperty("text", btn.getText());
+		File file = new File(btn.getImageSrc());
+		if(file.exists())
+			json.addProperty("image", Util.imageToBase64(file));
+		else
+			json.addProperty("image", "");
 		json.addProperty("x", btn.getX());
 		json.addProperty("y", btn.getY());
+		System.out.println(json.toString());
 		sendMessage(json);
 	}
 
@@ -138,7 +136,8 @@ public class PiDeckConnection
 	{
 		try
 		{
-			os.writeBytes(json.toString() + "\n");
+			if(os != null)
+				os.writeBytes(json.toString() + "\n");
 		} catch(IOException e)
 		{
 			e.printStackTrace();

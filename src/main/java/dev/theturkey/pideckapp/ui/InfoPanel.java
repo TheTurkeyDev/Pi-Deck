@@ -19,6 +19,7 @@ public class InfoPanel extends JPanel
 	private JLabel buttonIDLabel;
 	private JButton bgColorButton;
 	private JButton bgImageButton;
+	private JTextField buttonTextInput;
 
 	private JPanel actionsPanel;
 
@@ -79,7 +80,6 @@ public class InfoPanel extends JPanel
 		gbc.gridy = 1;
 		add(colorPanel, gbc);
 
-
 		JPanel imagePanel = new JPanel();
 		imagePanel.setBackground(UIFrame.BACKGROUND_SECONDARY);
 		JLabel bgImageLabel = new JLabel("Image: ");
@@ -105,18 +105,58 @@ public class InfoPanel extends JPanel
 				File selectedFile = fileChooser.getSelectedFile();
 				bgImageButton.setIcon(Util.getScaledImage(selectedFile.getPath(), 16, 16));
 				currentBtn.setImageSrc(selectedFile.getPath());
+				Core.getPiDeck().updateButton(currentBtn);
 				Core.getUI().updateSim();
 				Config.saveProfiles();
 			}
 		});
 		imagePanel.add(bgImageButton);
 
-		imagePanel.setMaximumSize(getSize());
+		JButton removeImageButton = new JButton();
+		removeImageButton.setPreferredSize(new Dimension(20, 16));
+		removeImageButton.setIcon(Util.getScaledImage(new ImageIcon(Util.getRes("icons/x_mark.png")), 16, 16));
+		removeImageButton.addActionListener(e ->
+		{
+			bgImageButton.setIcon(null);
+			currentBtn.setImageSrc("");
+			Core.getPiDeck().updateButton(currentBtn);
+			Core.getUI().updateSim();
+			Config.saveProfiles();
+		});
+		imagePanel.add(removeImageButton);
 
 		gbc = new GridBagConstraints();
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.gridy = 2;
 		add(imagePanel, gbc);
+
+
+		JPanel textInputPanel = new JPanel();
+		textInputPanel.setBackground(UIFrame.BACKGROUND_SECONDARY);
+		JLabel textInputLabel = new JLabel("Text: ");
+		textInputLabel.setForeground(UIFrame.TEXT_PRIMARY);
+		textInputPanel.add(textInputLabel);
+
+		buttonTextInput = new JDelayedSaveTextField("", text ->
+		{
+			if(currentBtn.getImageSrc().isEmpty())
+				currentBtn.setText(text);
+			Core.getPiDeck().updateButton(currentBtn);
+			Core.getUI().updateSim();
+			Config.saveProfiles();
+		});
+		buttonTextInput.setBackground(UIFrame.BACKGROUND_PRIMARY);
+		buttonTextInput.setForeground(UIFrame.TEXT_LIGHT);
+		buttonTextInput.setSize(100, 25);
+		buttonTextInput.setPreferredSize(new Dimension(100, 25));
+		textInputPanel.add(buttonTextInput);
+
+		textInputPanel.setMaximumSize(getSize());
+
+		gbc = new GridBagConstraints();
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.gridy = 3;
+		add(textInputPanel, gbc);
 
 
 		actionsPanel = new JPanel();
@@ -150,14 +190,14 @@ public class InfoPanel extends JPanel
 		gbc = new GridBagConstraints();
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.weightx = 1;
-		gbc.gridy = 3;
+		gbc.gridy = 4;
 		add(actionsPanel, gbc);
 
 		JPanel fill = new JPanel();
 		fill.setBackground(UIFrame.BACKGROUND_SECONDARY);
 		gbc = new GridBagConstraints();
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.gridy = 4;
+		gbc.gridy = 5;
 		gbc.weighty = 1;
 		add(fill, gbc);
 	}
@@ -168,7 +208,9 @@ public class InfoPanel extends JPanel
 		currentBtn = button;
 		buttonIDLabel.setText("Button: " + button.getID());
 
+		buttonTextInput.setText(button.getText());
 		bgColorButton.setBackground(Util.hex2Rgb(button.getBgColor()));
+		bgImageButton.setIcon(Util.getScaledImage(button.getImageSrc(), 32, 32));
 
 		updateActionsPanel();
 
