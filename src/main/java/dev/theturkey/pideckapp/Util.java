@@ -1,8 +1,12 @@
 package dev.theturkey.pideckapp;
 
+import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.URL;
+import java.util.Base64;
 import java.util.UUID;
 
 public class Util
@@ -22,16 +26,19 @@ public class Util
 				Integer.valueOf(colorStr.substring(4, 6), 16));
 	}
 
-	public static Image getScaledImage(Image srcImg, int w, int h)
+	public static ImageIcon getScaledImage(String path, int w, int h)
 	{
-		BufferedImage resizedImg = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-		Graphics2D g2 = resizedImg.createGraphics();
+		return getScaledImage(new ImageIcon(path), w, h);
+	}
 
-		g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-		g2.drawImage(srcImg, 0, 0, w, h, null);
-		g2.dispose();
+	public static ImageIcon getScaledImage(ImageIcon srcImg, int w, int h)
+	{
+		return getScaledImage(srcImg.getImage(), w, h);
+	}
 
-		return resizedImg;
+	public static ImageIcon getScaledImage(Image srcImg, int w, int h)
+	{
+		return new ImageIcon(srcImg.getScaledInstance(w, h, java.awt.Image.SCALE_SMOOTH));
 	}
 
 	public static String genUUID()
@@ -42,5 +49,22 @@ public class Util
 	public static URL getRes(String path)
 	{
 		return Util.class.getClassLoader().getResource(path);
+	}
+
+	public static String imageToBase64(File file)
+	{
+		String encodedFile = "";
+		try
+		{
+			FileInputStream fileInputStreamReader = new FileInputStream(file);
+			byte[] bytes = new byte[(int) file.length()];
+			fileInputStreamReader.read(bytes);
+			encodedFile = Base64.getEncoder().encodeToString(bytes);
+		} catch(IOException e)
+		{
+			e.printStackTrace();
+		}
+
+		return encodedFile;
 	}
 }

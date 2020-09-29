@@ -18,16 +18,21 @@ def onclick(btn_id):
         pc_connection.send((json.dumps({"event": "click", "id": str(btn_id)}) + '\r\n').encode('ascii'))
 
 
+def clearScreen():
+ for widget in root.winfo_children():
+            widget.destroy()
+
 def parse_message(msg):
     global pong_received
     event = msg['event']
     if event == 'set_grid':
-        for widget in root.winfo_children():
-            widget.destroy()
+        clearScreen()
         for col in range(msg['columns']):
             tk.Grid.columnconfigure(root, col, weight=1)
         for row in range(msg['rows']):
             tk.Grid.rowconfigure(root, row, weight=1)
+    elif event == 'disconnect':
+         clearScreen()
     elif event == 'set_btn':
         add_button(msg['id'], msg['y'], msg['x'], msg['color'])
     elif event == 'pong':
@@ -73,19 +78,31 @@ def start_socket():
                 json_msg, full_msg = full_msg.split(b'\n', 1)
                 parse_message(json.loads(json_msg))
 
+        clearScreen()
+
 
 def start_ping_thread():
     global connected, pong_received, pc_connection
+
+    fails = 0
+
     while True:
         if connected:
-            print((json.dumps({"event": "ping"}) + '\r\n').encode('ascii'))
-            pc_connection.send((json.dumps({"event": "ping"}) + '\r\n').encode('ascii'))
-            sleep(5)
-            if pong_received:
-                pong_received = False
-            else:
+            try:
+                print((json.dumps({"event": "ping"}) + '\r\n').encode('ascii'))
+                pc_connection.send((json.dumps({"event": "ping"}) + '\r\n').encode('ascii'))
+                sleep(5)
+                if pong_received:
+                    pong_received = False
+                    fails = 0
+                else:
+                    fails+=1
+                    if fails == 3:
+                        connected = False
+            except(BrokenPipeError):
                 connected = False
-        sleep(10)
+                fails = 0
+        sleep(5)
 
 
 x = Thread(target=start_socket)

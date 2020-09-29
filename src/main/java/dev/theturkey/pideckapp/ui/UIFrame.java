@@ -73,8 +73,8 @@ public class UIFrame extends JFrame
 		topBar.add(saveBtn);
 
 		ImageIcon loading = new ImageIcon(Util.getRes("loading.gif"));
-		ImageIcon check = new ImageIcon(Util.getScaledImage((new ImageIcon(Util.getRes("icons/check_mark.png"))).getImage(), 16, 16));
-		ImageIcon xmark = new ImageIcon(Util.getScaledImage((new ImageIcon(Util.getRes("icons/x_mark.png"))).getImage(), 16, 16));
+		ImageIcon check = Util.getScaledImage(new ImageIcon(Util.getRes("icons/check_mark.png")), 16, 16);
+		ImageIcon xmark = Util.getScaledImage(new ImageIcon(Util.getRes("icons/x_mark.png")), 16, 16);
 		topBar.add(new JLabel("", xmark, JLabel.CENTER));
 
 		add(topBar, BorderLayout.PAGE_START);
@@ -134,7 +134,7 @@ public class UIFrame extends JFrame
 				setExtendedState(Frame.NORMAL);
 			});
 			popup.add(defaultItem);
-			trayIcon = new TrayIcon(image, "SystemTray Demo", popup);
+			trayIcon = new TrayIcon(image, "PiDeck App", popup);
 			trayIcon.setImageAutoSize(true);
 		}
 		else

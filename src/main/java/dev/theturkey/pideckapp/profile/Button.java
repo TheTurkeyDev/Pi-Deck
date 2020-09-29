@@ -56,6 +56,7 @@ public class Button
 		json.addProperty("y", this.getY());
 		json.addProperty("img", this.imageSrc);
 		json.addProperty("bg_color", this.getBgColor());
+		json.addProperty("img", this.getImageSrc());
 		JsonArray actionsArray = new JsonArray();
 		for(ActionInfo action : actions)
 			actionsArray.add(action.saveAction());
@@ -108,5 +109,15 @@ public class Button
 	public void removeAction(ActionInfo actionInfo)
 	{
 		this.actions.remove(actionInfo);
+	}
+
+	public String getImageSrc()
+	{
+		return imageSrc;
+	}
+
+	public void setImageSrc(String path)
+	{
+		this.imageSrc = path;
 	}
 }

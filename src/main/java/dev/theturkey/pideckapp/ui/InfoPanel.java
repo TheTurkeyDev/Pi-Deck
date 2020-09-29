@@ -10,6 +10,7 @@ import dev.theturkey.pideckapp.profile.Button;
 import javax.swing.*;
 import javax.swing.plaf.metal.MetalButtonUI;
 import java.awt.*;
+import java.io.File;
 
 public class InfoPanel extends JPanel
 {
@@ -17,6 +18,7 @@ public class InfoPanel extends JPanel
 
 	private JLabel buttonIDLabel;
 	private JButton bgColorButton;
+	private JButton bgImageButton;
 
 	private JPanel actionsPanel;
 
@@ -77,6 +79,46 @@ public class InfoPanel extends JPanel
 		gbc.gridy = 1;
 		add(colorPanel, gbc);
 
+
+		JPanel imagePanel = new JPanel();
+		imagePanel.setBackground(UIFrame.BACKGROUND_SECONDARY);
+		JLabel bgImageLabel = new JLabel("Image: ");
+		bgImageLabel.setForeground(UIFrame.TEXT_PRIMARY);
+		imagePanel.add(bgImageLabel);
+
+		bgImageButton = new JButton();
+		bgImageButton.setSize(32, 32);
+		bgImageButton.setPreferredSize(new Dimension(32, 32));
+		bgImageButton.setUI(new MetalButtonUI());
+		bgImageButton.setOpaque(true);
+		bgImageButton.setFocusPainted(false);
+		bgImageButton.addActionListener(e ->
+		{
+			if(currentBtn == null)
+				return;
+
+			JFileChooser fileChooser = new JFileChooser();
+			JFrame popup = new JFrame();
+			int result = fileChooser.showOpenDialog(popup);
+			if(result == JFileChooser.APPROVE_OPTION)
+			{
+				File selectedFile = fileChooser.getSelectedFile();
+				bgImageButton.setIcon(Util.getScaledImage(selectedFile.getPath(), 16, 16));
+				currentBtn.setImageSrc(selectedFile.getPath());
+				Core.getUI().updateSim();
+				Config.saveProfiles();
+			}
+		});
+		imagePanel.add(bgImageButton);
+
+		imagePanel.setMaximumSize(getSize());
+
+		gbc = new GridBagConstraints();
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.gridy = 2;
+		add(imagePanel, gbc);
+
+
 		actionsPanel = new JPanel();
 		actionsPanel.setLayout(new BoxLayout(actionsPanel, BoxLayout.Y_AXIS));
 		actionsPanel.setBackground(UIFrame.BACKGROUND_PRIMARY);
@@ -108,14 +150,14 @@ public class InfoPanel extends JPanel
 		gbc = new GridBagConstraints();
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.weightx = 1;
-		gbc.gridy = 2;
+		gbc.gridy = 3;
 		add(actionsPanel, gbc);
 
 		JPanel fill = new JPanel();
 		fill.setBackground(UIFrame.BACKGROUND_SECONDARY);
 		gbc = new GridBagConstraints();
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.gridy = 3;
+		gbc.gridy = 4;
 		gbc.weighty = 1;
 		add(fill, gbc);
 	}

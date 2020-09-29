@@ -22,8 +22,8 @@ public class KeyAction extends BaseAction
 			int delay = Integer.parseInt(info.getProps().getOrDefault("step_delay", "50"));
 			robot.setAutoDelay(delay);
 			int key = getKey(info.getProps().getOrDefault("key", ""));
-			boolean press = Boolean.parseBoolean(info.getProps().getOrDefault("press", ""));
-			boolean release = Boolean.parseBoolean(info.getProps().getOrDefault("release", ""));
+			boolean press = Boolean.parseBoolean(info.getProps().getOrDefault("press", "true"));
+			boolean release = Boolean.parseBoolean(info.getProps().getOrDefault("release", "false"));
 			if(key != -1)
 			{
 				if(press)
