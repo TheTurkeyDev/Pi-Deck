@@ -34,7 +34,7 @@ public class InfoPanel extends JPanel
 
 		JPanel titlePanel = new JPanel();
 		titlePanel.setBackground(UIFrame.BACKGROUND_SECONDARY);
-		buttonIDLabel = new JLabel("Button: ");
+		buttonIDLabel = new JLabel("Button Info");
 		buttonIDLabel.setForeground(UIFrame.TEXT_PRIMARY);
 		buttonIDLabel.getInsets().set(10, 0, 10, 0);
 		titlePanel.add(buttonIDLabel);
@@ -176,13 +176,7 @@ public class InfoPanel extends JPanel
 		addAction.setUI(new MetalButtonUI());
 		addAction.setOpaque(true);
 		addAction.setFocusPainted(false);
-		addAction.addActionListener(e ->
-		{
-			currentBtn.addAction(new ActionInfo());
-			Config.saveProfiles();
-			updateActionsPanel();
-			updateUI();
-		});
+		addAction.addActionListener(e -> new IntegrationsFrame(this, currentBtn));
 		actionsPanelTopBar.add(addAction);
 
 		actionsPanel.add(actionsPanelTopBar);
@@ -206,7 +200,7 @@ public class InfoPanel extends JPanel
 	public void setInfoPanelButton(Button button)
 	{
 		currentBtn = button;
-		buttonIDLabel.setText("Button: " + button.getID());
+		buttonIDLabel.setText("Button Info");
 
 		buttonTextInput.setText(button.getText());
 		bgColorButton.setBackground(Util.hex2Rgb(button.getBgColor()));

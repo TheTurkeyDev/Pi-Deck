@@ -1,7 +1,6 @@
 package dev.theturkey.pideckapp.ui;
 
 import dev.theturkey.pideckapp.Util;
-import dev.theturkey.pideckapp.action.ActionsManager;
 import dev.theturkey.pideckapp.config.Config;
 import dev.theturkey.pideckapp.integrations.ActionProperty;
 import dev.theturkey.pideckapp.profile.ActionInfo;
@@ -10,12 +9,9 @@ import dev.theturkey.pideckapp.profile.Button;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-import java.util.List;
 
 public class ActionPanel extends JPanel
 {
-	private JComboBox<String> actionComboBox;
-	private JComboBox<String> typeComboBox;
 	private JPanel propsPanel;
 
 	public ActionPanel(InfoPanel parent, Button btn, ActionInfo action)
@@ -24,45 +20,13 @@ public class ActionPanel extends JPanel
 		setBackground(UIFrame.BACKGROUND_SECONDARY);
 		getInsets().set(10, 0, 0, 0);
 
-		List<String> actions = ActionsManager.getAllActions(action.getType());
-		actionComboBox = new JComboBox<>(actions.toArray(new String[0]));
-		actionComboBox.setSelectedIndex(actions.contains(action.getAction()) ? actions.indexOf(action.getAction()) : -1);
-		actionComboBox.addActionListener(e ->
-		{
-			if(actionComboBox.getSelectedIndex() == -1)
-				return;
-			action.setType(String.valueOf(typeComboBox.getSelectedItem()));
-			action.setAction(String.valueOf(actionComboBox.getSelectedItem()));
-			Config.saveProfiles();
-			updateProps(action);
-			updateUI();
-		});
-
-		List<String> integrations = ActionsManager.getAllIntegration();
-		typeComboBox = new JComboBox<>(integrations.toArray(new String[0]));
-		typeComboBox.setSelectedIndex(integrations.contains(action.getType()) ? integrations.indexOf(action.getType()) : -1);
-		typeComboBox.addActionListener(e ->
-		{
-			String selected = String.valueOf(typeComboBox.getSelectedItem());
-			DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>(ActionsManager.getAllActions(selected).toArray(new String[0]));
-			actionComboBox.setModel(model);
-			actionComboBox.setSelectedIndex(-1);
-		});
-
 		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.fill = GridBagConstraints.BOTH;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		gbc.weightx = 1;
 		gbc.insets = new Insets(0, 5, 0, 5);
-		add(typeComboBox, gbc);
-
-		gbc = new GridBagConstraints();
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.gridx = 1;
-		gbc.gridy = 0;
-		gbc.weightx = 1;
-		add(actionComboBox, gbc);
+		add(new Box.Filler(new Dimension(0, 0), new Dimension(0, 0), new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE)), gbc);
 
 		JButton removeBtn = new JButton();
 		removeBtn.setPreferredSize(new Dimension(20, 16));
@@ -76,10 +40,11 @@ public class ActionPanel extends JPanel
 		});
 
 		gbc = new GridBagConstraints();
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.gridx = 2;
+		gbc.fill = GridBagConstraints.VERTICAL;
+		gbc.gridx = 1;
 		gbc.gridy = 0;
-		gbc.insets = new Insets(0, 5, 0, 5);
+		gbc.weightx = 0;
+		gbc.insets = new Insets(5, 5, 5, 5);
 		add(removeBtn, gbc);
 
 		propsPanel = new JPanel();

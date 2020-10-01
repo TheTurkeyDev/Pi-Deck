@@ -20,4 +20,10 @@ public class IOIntegration implements IIntegration
 	{
 		return "io";
 	}
+
+	@Override
+	public String getDisplay()
+	{
+		return "IO";
+	}
 }

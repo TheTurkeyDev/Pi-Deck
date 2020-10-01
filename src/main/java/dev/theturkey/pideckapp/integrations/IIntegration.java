@@ -4,4 +4,5 @@ public interface IIntegration
 {
 	void load();
 	String getType();
+	String getDisplay();
 }

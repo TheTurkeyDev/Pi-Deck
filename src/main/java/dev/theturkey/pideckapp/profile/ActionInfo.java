@@ -17,10 +17,10 @@ public class ActionInfo
 	private long delay = 0;
 	private Map<String, String> props;
 
-	public ActionInfo()
+	public ActionInfo(String type, String action)
 	{
-		type = "";
-		action = "";
+		this.type = type;
+		this.action = action;
 		props = new HashMap<>();
 	}
 

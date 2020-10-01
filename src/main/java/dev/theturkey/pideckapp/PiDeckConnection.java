@@ -111,7 +111,6 @@ public class PiDeckConnection
 			json.addProperty("image", "");
 		json.addProperty("x", btn.getX());
 		json.addProperty("y", btn.getY());
-		System.out.println(json.toString());
 		sendMessage(json);
 	}
 

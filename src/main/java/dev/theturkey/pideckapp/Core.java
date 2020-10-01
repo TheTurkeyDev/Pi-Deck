@@ -2,6 +2,7 @@ package dev.theturkey.pideckapp;
 
 import dev.theturkey.pideckapp.config.Config;
 import dev.theturkey.pideckapp.integrations.IOIntegration;
+import dev.theturkey.pideckapp.integrations.TwitchIntegration;
 import dev.theturkey.pideckapp.profile.ProfileManager;
 import dev.theturkey.pideckapp.ui.UIFrame;
 
@@ -22,6 +23,8 @@ public class Core
 
 		IOIntegration ioIntegration = new IOIntegration();
 		ioIntegration.load();
+		TwitchIntegration twitchIntegration = new TwitchIntegration();
+		twitchIntegration.load();
 		ProfileManager.loadProfiles();
 
 		pideck = new PiDeckConnection();
