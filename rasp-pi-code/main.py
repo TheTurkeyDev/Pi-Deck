@@ -3,9 +3,9 @@ import io
 import json
 from threading import Thread
 import tkinter as tk
-import socket
 from time import sleep
 
+import serial
 from PIL import Image, ImageTk
 
 connected = False
@@ -15,9 +15,15 @@ pong_received = False
 root = tk.Tk()
 
 
+def send_json(msg):
+    global pc_connection
+    pc_connection.write((json.dumps(msg) + '\r\n').encode('ascii'))
+    pc_connection.flushOutput()
+
+
 def onclick(btn_id):
     if connected:
-        pc_connection.send((json.dumps({"event": "click", "id": str(btn_id)}) + '\r\n').encode('ascii'))
+        send_json({"event": "click", "id": str(btn_id)})
 
 
 def clear_screen():
@@ -40,6 +46,10 @@ def parse_message(msg):
         add_button(msg['id'], msg['y'], msg['x'], msg['color'], msg['text'], msg['image'])
     elif event == 'pong':
         pong_received = True
+    elif event == 'ping':
+        send_json({"event": "pong"})
+    elif event == 'pi-deck-syn':
+        send_json({"event": "pi-deck-syn-ack"})
 
 
 def place_image(btn, image):
@@ -69,49 +79,38 @@ root.geometry("800x480")
 
 
 def start_socket():
-    s = socket.socket()
-    s.bind(('0.0.0.0', 49494))
-    s.listen(5)
     while True:
-        print('Waiting for connection...')
-        # Establish connection with client.
-        c, addr = s.accept()
-        c.settimeout(5)
-        print('Got connection from', addr)
+        print('Attempting to Connect')
+        ser = serial.Serial('/dev/ttyGS0', 115200)
         global connected, pc_connection
         connected = True
-        pc_connection = c
+        pc_connection = ser
 
-        full_msg = b''
         while connected:
             msg = b''
 
             try:
-                msg = c.recv(16)
+                msg = ser.readline()
             except ConnectionResetError:
                 connected = False
-            except socket.timeout:
-                continue
 
-            full_msg += msg
-
-            if b'\n' in full_msg:
-                json_msg, full_msg = full_msg.split(b'\n', 1)
-                parse_message(json.loads(json_msg))
+            try:
+                parse_message(json.loads(msg))
+            except json.JSONDecodeError:
+                print(f"FAIL on {msg}")
 
         clear_screen()
 
 
 def start_ping_thread():
-    global connected, pong_received, pc_connection
+    global connected, pong_received
 
     fails = 0
 
     while True:
         if connected:
             try:
-                print((json.dumps({"event": "ping"}) + '\r\n').encode('ascii'))
-                pc_connection.send((json.dumps({"event": "ping"}) + '\r\n').encode('ascii'))
+                send_json({"event": "ping"})
                 sleep(5)
                 if pong_received:
                     pong_received = False
@@ -128,7 +127,6 @@ def start_ping_thread():
 
 x = Thread(target=start_socket)
 x.start()
-# TODO needs to be made thread safe
 ping_thread = Thread(target=start_ping_thread)
 ping_thread.start()
 

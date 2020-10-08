@@ -1,85 +1,83 @@
 package dev.theturkey.pideckapp;
 
+import com.fazecast.jSerialComm.SerialPort;
+import com.fazecast.jSerialComm.SerialPortDataListener;
+import com.fazecast.jSerialComm.SerialPortEvent;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import dev.theturkey.pideckapp.profile.Button;
 import dev.theturkey.pideckapp.profile.Profile;
 import dev.theturkey.pideckapp.profile.ProfileManager;
 
-import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.Socket;
-import java.net.UnknownHostException;
 
 public class PiDeckConnection
 {
 	private DataOutputStream os = null;
-	private Socket clientSocket = null;
-	private BufferedReader is = null;
+	private SerialPort comPort = null;
 
 	public void connect()
 	{
-		String hostname = "raspberrypi.local";
-		int port = 49494;
+		comPort = SerialPort.getCommPorts()[1];
+		comPort.setBaudRate(115200);
+		comPort.openPort();
 
-		try
-		{
-			clientSocket = new Socket(hostname, port);
-			os = new DataOutputStream(clientSocket.getOutputStream());
-			is = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-		} catch(UnknownHostException e)
-		{
-			System.err.println("Don't know about host: " + hostname);
-		} catch(IOException e)
-		{
-			System.err.println("Couldn't get I/O for the connection to: " + hostname);
-		}
+		os = new DataOutputStream(comPort.getOutputStream());
 
-		if(clientSocket == null || os == null || is == null)
+		comPort.addDataListener(new SerialPortDataListener()
 		{
-			System.err.println("Something is wrong. One variable is null.");
-			return;
-		}
+			@Override
+			public int getListeningEvents()
+			{
+				return SerialPort.LISTENING_EVENT_DATA_AVAILABLE;
+			}
+
+			@Override
+			public void serialEvent(SerialPortEvent event)
+			{
+				if(event.getEventType() != SerialPort.LISTENING_EVENT_DATA_AVAILABLE)
+					return;
+
+				byte[] newData = new byte[comPort.bytesAvailable()];
+				comPort.readBytes(newData, newData.length);
+				String responseLine = new String(newData);
+				JsonObject json = JsonParser.parseString(responseLine).getAsJsonObject();
+				switch(json.get("event").getAsString())
+				{
+					case "click":
+						ProfileManager.getCurrentProfile().onButtonPress(json.get("id").getAsString());
+						break;
+					case "ping":
+						JsonObject pong = new JsonObject();
+						pong.addProperty("event", "pong");
+						sendMessage(pong);
+						break;
+					default:
+						System.out.println(responseLine);
+						break;
+				}
+			}
+		});
 
 		Thread t = new Thread(() ->
 		{
-			boolean closed = false;
-			while(clientSocket.isConnected() && !closed)
+			//This is done because apparently there's a delay when changing the baud rate
+			try
 			{
-				try
-				{
-					String responseLine = is.readLine();
-					JsonObject json = JsonParser.parseString(responseLine).getAsJsonObject();
-					switch(json.get("event").getAsString())
-					{
-						case "click":
-							ProfileManager.getCurrentProfile().onButtonPress(json.get("id").getAsString());
-							break;
-						case "ping":
-							JsonObject pong = new JsonObject();
-							pong.addProperty("event", "pong");
-							sendMessage(pong);
-							break;
-						default:
-							System.out.println(responseLine);
-							break;
-					}
-				} catch(IOException e)
-				{
-					closed = true;
-				} catch(Exception e)
-				{
-					e.printStackTrace();
-				}
-
+				Thread.sleep(3000);
+			} catch(InterruptedException e)
+			{
+				e.printStackTrace();
 			}
+
+			updatePiDisplay();
+			JsonObject synJson = new JsonObject();
+			synJson.addProperty("event", "pi-deck-syn");
+			sendMessage(synJson);
 		});
 		t.start();
-
-		updatePiDisplay();
 	}
 
 	public void updatePiDisplay()
@@ -121,10 +119,8 @@ public class PiDeckConnection
 
 		try
 		{
-
 			os.close();
-			is.close();
-			clientSocket.close();
+			comPort.closePort();
 		} catch(Exception ex)
 		{
 			ex.printStackTrace();
