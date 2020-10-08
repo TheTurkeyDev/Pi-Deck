@@ -45,6 +45,25 @@ Must have a way to connect to the pi over wifi/ethernet
         @xset s off
         @xset -dpms
         ```
-    - Reboot again...
-        - `sudo reboot`
+9. Setup PiDeck to run on startup
+    - Make a service
+        - `sudo nano /etc/systemd/system/pideck.service`
+        - Set the file contents to
+        ```
+        [Unit]
+        Description=PiDeck pi application
+        After=graphical.target
+        
+        [Service]
+        Type=simple
+        Environment="DISPLAY=:0"
+        ExecStart=/usr/bin/python3 /opt/pideck/main.py
+        
+        [Install]
+        WantedBy=graphical.target
+        ```
+        - `sudo systemctl daemon-reload`
+        - `sudo systemctl enable pideck.service`
+        - Reboot again...
+            - `sudo reboot`
     
