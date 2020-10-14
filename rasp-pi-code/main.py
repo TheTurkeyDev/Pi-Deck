@@ -8,7 +8,6 @@ from time import sleep
 import serial
 from PIL import Image, ImageTk
 
-connected = False
 pc_connection = None
 pong_received = False
 
@@ -22,8 +21,7 @@ def send_json(msg):
 
 
 def onclick(btn_id):
-    if connected:
-        send_json({"event": "click", "id": str(btn_id)})
+    send_json({"event": "click", "id": str(btn_id)})
 
 
 def clear_screen():
@@ -79,50 +77,39 @@ root.geometry("800x480")
 
 
 def start_socket():
+    print('Attempting to Connect')
+    ser = serial.Serial('/dev/ttyGS0', 115200, timeout=10)
+    global pc_connection
+    pc_connection = ser
+
+    send_json({"event": "pi-deck-syn"})
     while True:
-        print('Attempting to Connect')
-        ser = serial.Serial('/dev/ttyGS0', 115200)
-        global connected, pc_connection
-        connected = True
-        pc_connection = ser
+        msg = ser.readline()
 
-        while connected:
-            msg = b''
+        if msg is '':
+            continue
 
-            try:
-                msg = ser.readline()
-            except ConnectionResetError:
-                connected = False
-
-            try:
-                parse_message(json.loads(msg))
-            except json.JSONDecodeError:
-                print(f"FAIL on {msg}")
-
-        clear_screen()
+        try:
+            parse_message(json.loads(msg))
+        except json.JSONDecodeError:
+            print(f"FAIL!")
 
 
 def start_ping_thread():
-    global connected, pong_received
+    global pong_received
 
     fails = 0
 
     while True:
-        if connected:
-            try:
-                send_json({"event": "ping"})
-                sleep(5)
-                if pong_received:
-                    pong_received = False
-                    fails = 0
-                else:
-                    fails += 1
-                    if fails == 3:
-                        connected = False
-            except BrokenPipeError:
-                connected = False
-                fails = 0
+        send_json({"event": "ping"})
         sleep(5)
+        if pong_received:
+            pong_received = False
+            fails = 0
+        else:
+            fails += 1
+            if fails == 3:
+                clear_screen()
 
 
 x = Thread(target=start_socket)

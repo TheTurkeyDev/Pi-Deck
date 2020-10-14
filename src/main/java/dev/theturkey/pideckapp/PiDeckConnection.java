@@ -1,83 +1,82 @@
 package dev.theturkey.pideckapp;
 
-import com.fazecast.jSerialComm.SerialPort;
-import com.fazecast.jSerialComm.SerialPortDataListener;
-import com.fazecast.jSerialComm.SerialPortEvent;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import dev.theturkey.pideckapp.profile.Button;
 import dev.theturkey.pideckapp.profile.Profile;
 import dev.theturkey.pideckapp.profile.ProfileManager;
+import jssc.SerialPort;
+import jssc.SerialPortException;
+import jssc.SerialPortList;
 
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.IOException;
 
 public class PiDeckConnection
 {
-	private DataOutputStream os = null;
-	private SerialPort comPort = null;
+	private SerialPort port;
 
 	public void connect()
 	{
-		comPort = SerialPort.getCommPorts()[1];
-		comPort.setBaudRate(115200);
-		comPort.openPort();
-
-		os = new DataOutputStream(comPort.getOutputStream());
-
-		comPort.addDataListener(new SerialPortDataListener()
+		String[] ports = SerialPortList.getPortNames();
+		port = new SerialPort(ports[1]);
+		try
 		{
-			@Override
-			public int getListeningEvents()
-			{
-				return SerialPort.LISTENING_EVENT_DATA_AVAILABLE;
-			}
-
-			@Override
-			public void serialEvent(SerialPortEvent event)
-			{
-				if(event.getEventType() != SerialPort.LISTENING_EVENT_DATA_AVAILABLE)
-					return;
-
-				byte[] newData = new byte[comPort.bytesAvailable()];
-				comPort.readBytes(newData, newData.length);
-				String responseLine = new String(newData);
-				JsonObject json = JsonParser.parseString(responseLine).getAsJsonObject();
-				switch(json.get("event").getAsString())
-				{
-					case "click":
-						ProfileManager.getCurrentProfile().onButtonPress(json.get("id").getAsString());
-						break;
-					case "ping":
-						JsonObject pong = new JsonObject();
-						pong.addProperty("event", "pong");
-						sendMessage(pong);
-						break;
-					default:
-						System.out.println(responseLine);
-						break;
-				}
-			}
-		});
-
-		Thread t = new Thread(() ->
+			port.openPort();
+			port.setParams(SerialPort.BAUDRATE_115200, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+		} catch(SerialPortException e)
 		{
-			//This is done because apparently there's a delay when changing the baud rate
+			//TODO Don't throw, just mark as issue in UI
+			throw new RuntimeException("Error opening serial port " + e.getPortName() + ": " + e.getExceptionType());
+		}
+
+		Thread thread = new Thread(() ->
+		{
 			try
 			{
-				Thread.sleep(3000);
-			} catch(InterruptedException e)
-			{
-				e.printStackTrace();
-			}
+				while(!Thread.interrupted())
+				{
+					String input = port.readString();
+					if(input == null || input.trim().isEmpty())
+						continue;
+					JsonObject json;
+					try
+					{
+						json = JsonParser.parseString(input).getAsJsonObject();
+					} catch(JsonSyntaxException e)
+					{
+						System.out.println("Failed to parse '" + input + "'");
+						continue;
+					}
 
-			updatePiDisplay();
-			JsonObject synJson = new JsonObject();
-			synJson.addProperty("event", "pi-deck-syn");
-			sendMessage(synJson);
+					switch(json.get("event").getAsString())
+					{
+						case "click":
+							ProfileManager.getCurrentProfile().onButtonPress(json.get("id").getAsString());
+							break;
+						case "ping":
+							JsonObject pong = new JsonObject();
+							pong.addProperty("event", "pong");
+							sendMessage(pong);
+							break;
+						default:
+							System.out.println(input);
+							break;
+					}
+					Thread.sleep(5);
+				}
+			} catch(Exception ex)
+			{
+				ex.printStackTrace();
+			}
 		});
-		t.start();
+		thread.start();
+
+
+		updatePiDisplay();
+		JsonObject synJson = new JsonObject();
+		synJson.addProperty("event", "pi-deck-syn");
+		sendMessage(synJson);
 	}
 
 	public void updatePiDisplay()
@@ -114,13 +113,12 @@ public class PiDeckConnection
 
 	public void close()
 	{
-		if(os == null)
+		if(port == null)
 			return;
 
 		try
 		{
-			os.close();
-			comPort.closePort();
+			port.closePort();
 		} catch(Exception ex)
 		{
 			ex.printStackTrace();
@@ -131,9 +129,9 @@ public class PiDeckConnection
 	{
 		try
 		{
-			if(os != null)
-				os.writeBytes(json.toString() + "\n");
-		} catch(IOException e)
+			if(port != null)
+				port.writeString(json.toString() + "\n");
+		} catch(SerialPortException e)
 		{
 			e.printStackTrace();
 		}
