@@ -1,37 +1,40 @@
-package dev.theturkey.pideckapp;
+package dev.theturkey.pideckapp.connection;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
+import dev.theturkey.pideckapp.Util;
 import dev.theturkey.pideckapp.profile.Button;
 import dev.theturkey.pideckapp.profile.Profile;
 import dev.theturkey.pideckapp.profile.ProfileManager;
 import jssc.SerialPort;
 import jssc.SerialPortException;
-import jssc.SerialPortList;
 
 import java.io.File;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class PiDeckConnection
 {
 	private SerialPort port;
 
-	public void connect()
-	{
-		String[] ports = SerialPortList.getPortNames();
-		port = new SerialPort(ports[1]);
-		try
-		{
-			port.openPort();
-			port.setParams(SerialPort.BAUDRATE_115200, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
-		} catch(SerialPortException e)
-		{
-			//TODO Don't throw, just mark as issue in UI
-			throw new RuntimeException("Error opening serial port " + e.getPortName() + ": " + e.getExceptionType());
-		}
+	private BlockingQueue<String> messageQueue = new LinkedBlockingQueue<>();
 
+	public void connectTo(String portName)
+	{
+		port = new SerialPort(portName);
 		Thread thread = new Thread(() ->
 		{
+			try
+			{
+				port.openPort();
+				port.setParams(SerialPort.BAUDRATE_115200, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+				System.out.println("Connected!");
+			} catch(SerialPortException e)
+			{
+				//TODO Don't throw, just mark as issue in UI
+				throw new RuntimeException("Error opening serial port " + e.getPortName() + ": " + e.getExceptionType());
+			}
 			try
 			{
 				while(!Thread.interrupted())
@@ -39,29 +42,35 @@ public class PiDeckConnection
 					String input = port.readString();
 					if(input == null || input.trim().isEmpty())
 						continue;
-					JsonObject json;
-					try
+					for(String msg : input.split("\n"))
 					{
-						json = JsonParser.parseString(input).getAsJsonObject();
-					} catch(JsonSyntaxException e)
-					{
-						System.out.println("Failed to parse '" + input + "'");
-						continue;
-					}
+						if(msg.isEmpty())
+							continue;
 
-					switch(json.get("event").getAsString())
-					{
-						case "click":
-							ProfileManager.getCurrentProfile().onButtonPress(json.get("id").getAsString());
-							break;
-						case "ping":
-							JsonObject pong = new JsonObject();
-							pong.addProperty("event", "pong");
-							sendMessage(pong);
-							break;
-						default:
-							System.out.println(input);
-							break;
+						JsonObject json;
+						try
+						{
+							json = JsonParser.parseString(msg).getAsJsonObject();
+						} catch(JsonSyntaxException e)
+						{
+							System.out.println("Failed to parse '" + msg + "'");
+							continue;
+						}
+
+						switch(json.get("event").getAsString())
+						{
+							case "click":
+								ProfileManager.getCurrentProfile().onButtonPress(json.get("id").getAsString());
+								break;
+							case "ping":
+								JsonObject pong = new JsonObject();
+								pong.addProperty("event", "pong");
+								sendMessage(pong);
+								break;
+							default:
+								System.out.println(msg);
+								break;
+						}
 					}
 					Thread.sleep(5);
 				}
@@ -72,6 +81,27 @@ public class PiDeckConnection
 		});
 		thread.start();
 
+		Thread sendThread = new Thread(() ->
+		{
+			while(!Thread.interrupted())
+			{
+				try
+				{
+					if(port != null && port.isOpened())
+					{
+						if(!messageQueue.isEmpty())
+						{
+							String message = messageQueue.take();
+							port.writeString(message + "\n");
+						}
+					}
+				} catch(SerialPortException | InterruptedException e)
+				{
+					e.printStackTrace();
+				}
+			}
+		});
+		sendThread.start();
 
 		updatePiDisplay();
 		JsonObject synJson = new JsonObject();
@@ -127,13 +157,6 @@ public class PiDeckConnection
 
 	public void sendMessage(JsonObject json)
 	{
-		try
-		{
-			if(port != null)
-				port.writeString(json.toString() + "\n");
-		} catch(SerialPortException e)
-		{
-			e.printStackTrace();
-		}
+		messageQueue.add(json.toString());
 	}
 }

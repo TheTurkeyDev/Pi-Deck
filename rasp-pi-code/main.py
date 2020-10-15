@@ -12,12 +12,15 @@ pc_connection = None
 pong_received = False
 
 root = tk.Tk()
+frame = tk.Frame(root, width=800, height=480, bg='black')
+frame.pack(fill=tk.BOTH, expand=1)
 
 
 def send_json(msg):
     global pc_connection
-    pc_connection.write((json.dumps(msg) + '\r\n').encode('ascii'))
-    pc_connection.flushOutput()
+    if pc_connection is not None:
+        pc_connection.write((json.dumps(msg) + '\r\n').encode('ascii'))
+        pc_connection.flushOutput()
 
 
 def onclick(btn_id):
@@ -25,8 +28,10 @@ def onclick(btn_id):
 
 
 def clear_screen():
-    for widget in root.winfo_children():
-        widget.destroy()
+    global frame
+    frame.destroy()
+    frame = tk.Frame(root, width=800, height=480, bg='black')
+    frame.pack(fill=tk.BOTH, expand=1)
 
 
 def parse_message(msg):
@@ -35,9 +40,9 @@ def parse_message(msg):
     if event == 'set_grid':
         clear_screen()
         for col in range(msg['columns']):
-            tk.Grid.columnconfigure(root, col, weight=1, uniform="grid_with")
+            tk.Grid.columnconfigure(frame, col, weight=1, uniform="grid_with")
         for row in range(msg['rows']):
-            tk.Grid.rowconfigure(root, row, weight=1, uniform="grid_height")
+            tk.Grid.rowconfigure(frame, row, weight=1, uniform="grid_height")
     elif event == 'disconnect':
         clear_screen()
     elif event == 'set_btn':
@@ -62,7 +67,7 @@ def place_image(btn, image):
 
 
 def add_button(btn_id, row, col, color, text, image):
-    btn = tk.Button(root, bg=color, activebackground=color, borderwidth=0, command=lambda: onclick(btn_id))
+    btn = tk.Button(frame, bg=color, activebackground=color, borderwidth=0, command=lambda: onclick(btn_id))
     if image:
         # Hack to wait for the button size to get applied... IDK what the "right" way is
         btn.after(200, lambda: place_image(btn, image))

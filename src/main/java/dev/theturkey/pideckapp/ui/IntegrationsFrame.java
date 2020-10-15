@@ -1,5 +1,6 @@
 package dev.theturkey.pideckapp.ui;
 
+import dev.theturkey.pideckapp.Util;
 import dev.theturkey.pideckapp.action.ActionsManager;
 import dev.theturkey.pideckapp.config.Config;
 import dev.theturkey.pideckapp.profile.ActionInfo;
@@ -33,7 +34,7 @@ public class IntegrationsFrame extends JFrame
 
 			JPanel actionsPanel = new JPanel();
 
-			JButton intBtn = new JButton(integration);
+			JButton intBtn = new JButton();
 			intBtn.setForeground(UIFrame.TEXT_PRIMARY);
 			intBtn.setUI(new MetalButtonUI());
 			intBtn.setBackground(UIFrame.BACKGROUND_SECONDARY);
@@ -49,7 +50,14 @@ public class IntegrationsFrame extends JFrame
 
 			for(String action : ActionsManager.getAllActions(integration))
 			{
-				JButton btn = new JButton(action);
+				JButton btn = new JButton();
+				try
+				{
+					btn.setIcon(Util.getScaledImage(new ImageIcon(Util.getRes("icons/" + action + ".png")), 90, 90));
+				} catch(Exception e)
+				{
+					btn.setText(action);
+				}
 				btn.setPreferredSize(new Dimension(100, 100));
 				btn.setUI(new MetalButtonUI());
 				btn.setBackground(UIFrame.PRIMARY_MAIN);

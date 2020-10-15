@@ -10,7 +10,6 @@ import javax.swing.*;
 
 public class Core
 {
-	private static PiDeckConnection pideck;
 	private static UIFrame ui;
 
 	public static void main(String[] args)
@@ -27,9 +26,6 @@ public class Core
 		twitchIntegration.load();
 		ProfileManager.loadProfiles();
 
-		pideck = new PiDeckConnection();
-		pideck.connect();
-
 		try
 		{
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -40,11 +36,6 @@ public class Core
 
 		System.out.println("UI");
 		ui = new UIFrame();
-	}
-
-	public static PiDeckConnection getPiDeck()
-	{
-		return pideck;
 	}
 
 	public static UIFrame getUI()

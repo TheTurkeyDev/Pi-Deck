@@ -77,10 +77,19 @@ public class Config
 
 	public static void saveProfiles()
 	{
+		JsonObject jsonObject;
+		try
+		{
+			jsonObject = ProfileManager.saveProfiles();
+		} catch(Exception e)
+		{
+			e.printStackTrace();
+			return;
+		}
 		try(Writer writer = new OutputStreamWriter(new FileOutputStream(profilesFile), StandardCharsets.UTF_8))
 		{
 			//System.out.println("SAVING!");
-			GSON.toJson(ProfileManager.saveProfiles(), writer);
+			GSON.toJson(jsonObject, writer);
 		} catch(IOException e)
 		{
 			e.printStackTrace();

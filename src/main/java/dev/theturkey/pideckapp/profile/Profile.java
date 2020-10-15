@@ -12,9 +12,16 @@ public class Profile
 {
 	private String name;
 	private Map<String, Button> buttons;
-	private List<String> visibleButtons;
 	private int columns;
 	private int rows;
+
+	public Profile(String name, int columns, int rows)
+	{
+		this.name = name;
+		this.columns = columns;
+		this.rows = rows;
+		buttons = new HashMap<>();
+	}
 
 	public Profile(JsonObject json)
 	{
@@ -97,5 +104,11 @@ public class Profile
 	public void setRows(int rows)
 	{
 		this.rows = rows;
+	}
+
+	@Override
+	public String toString()
+	{
+		return name;
 	}
 }

@@ -4,6 +4,7 @@ package dev.theturkey.pideckapp.ui;
 import dev.theturkey.pideckapp.Core;
 import dev.theturkey.pideckapp.Util;
 import dev.theturkey.pideckapp.config.Config;
+import dev.theturkey.pideckapp.connection.ConnectionManager;
 import dev.theturkey.pideckapp.profile.ActionInfo;
 import dev.theturkey.pideckapp.profile.Button;
 
@@ -66,7 +67,7 @@ public class InfoPanel extends JPanel
 			{
 				bgColorButton.setBackground(newColor);
 				currentBtn.setBgColor(newColor);
-				Core.getPiDeck().updateButton(currentBtn);
+				ConnectionManager.getCurrentConnection().updateButton(currentBtn);
 				Core.getUI().updateSim();
 				Config.saveProfiles();
 			}
@@ -105,7 +106,7 @@ public class InfoPanel extends JPanel
 				File selectedFile = fileChooser.getSelectedFile();
 				bgImageButton.setIcon(Util.getScaledImage(selectedFile.getPath(), 16, 16));
 				currentBtn.setImageSrc(selectedFile.getPath());
-				Core.getPiDeck().updateButton(currentBtn);
+				ConnectionManager.getCurrentConnection().updateButton(currentBtn);
 				Core.getUI().updateSim();
 				Config.saveProfiles();
 			}
@@ -119,7 +120,7 @@ public class InfoPanel extends JPanel
 		{
 			bgImageButton.setIcon(null);
 			currentBtn.setImageSrc("");
-			Core.getPiDeck().updateButton(currentBtn);
+			ConnectionManager.getCurrentConnection().updateButton(currentBtn);
 			Core.getUI().updateSim();
 			Config.saveProfiles();
 		});
@@ -141,7 +142,7 @@ public class InfoPanel extends JPanel
 		{
 			if(currentBtn.getImageSrc().isEmpty())
 				currentBtn.setText(text);
-			Core.getPiDeck().updateButton(currentBtn);
+			ConnectionManager.getCurrentConnection().updateButton(currentBtn);
 			Core.getUI().updateSim();
 			Config.saveProfiles();
 		});
@@ -200,16 +201,26 @@ public class InfoPanel extends JPanel
 	public void setInfoPanelButton(Button button)
 	{
 		currentBtn = button;
-		buttonIDLabel.setText("Button Info");
+		if(button != null)
+		{
+			buttonIDLabel.setText("Button Info");
 
-		buttonTextInput.setText(button.getText());
-		bgColorButton.setBackground(Util.hex2Rgb(button.getBgColor()));
-		bgImageButton.setIcon(Util.getScaledImage(button.getImageSrc(), 32, 32));
+			buttonTextInput.setText(button.getText());
+			bgColorButton.setBackground(Util.hex2Rgb(button.getBgColor()));
+			bgImageButton.setIcon(Util.getScaledImage(button.getImageSrc(), 32, 32));
 
-		updateActionsPanel();
+			updateActionsPanel();
 
-		setPreferredSize(new Dimension(150, getHeight()));
-		setVisible(true);
+			setPreferredSize(new Dimension(150, getHeight()));
+			setVisible(true);
+		}
+		else
+		{
+			setPreferredSize(new Dimension(0, getHeight()));
+			setVisible(false);
+		}
+
+
 		updateUI();
 	}
 

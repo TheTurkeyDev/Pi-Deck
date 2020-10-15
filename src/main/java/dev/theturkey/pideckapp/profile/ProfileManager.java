@@ -5,7 +5,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import dev.theturkey.pideckapp.config.Config;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class ProfileManager
 {
@@ -61,5 +63,20 @@ public class ProfileManager
 	public static Profile getCurrentProfile()
 	{
 		return currentProfile;
+	}
+
+	public static List<Profile> getProfiles()
+	{
+		return new ArrayList<>(PROFILES.values());
+	}
+
+	public static void addProfile(Profile profile)
+	{
+		PROFILES.put(profile.getName(), profile);
+	}
+
+	public static void setCurrentProfile(Profile profile)
+	{
+		currentProfile = profile;
 	}
 }

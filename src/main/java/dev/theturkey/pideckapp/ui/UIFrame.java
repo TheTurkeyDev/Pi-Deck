@@ -1,7 +1,9 @@
 package dev.theturkey.pideckapp.ui;
 
-import dev.theturkey.pideckapp.Core;
 import dev.theturkey.pideckapp.Util;
+import dev.theturkey.pideckapp.config.Config;
+import dev.theturkey.pideckapp.connection.ConnectionManager;
+import dev.theturkey.pideckapp.profile.Profile;
 import dev.theturkey.pideckapp.profile.ProfileManager;
 
 import javax.swing.*;
@@ -27,6 +29,10 @@ public class UIFrame extends JFrame
 	private JSplitPane sp;
 	private JSplitPane sp3;
 
+	private JComboBox<Profile> profilesComboBox;
+	private JSpinner rowsSpinner;
+	private JSpinner columnsSpinner;
+
 	public UIFrame()
 	{
 		simScreen = new SimScreen();
@@ -36,35 +42,86 @@ public class UIFrame extends JFrame
 		JPanel topBar = new JPanel();
 		topBar.setBackground(UIFrame.BACKGROUND_PRIMARY);
 
+		JButton addProfileBtn = new JButton("Connect");
+		addProfileBtn.setUI(new MetalButtonUI());
+		addProfileBtn.addActionListener(e -> new PiDeckConnectFrame(this));
+		addProfileBtn.getInsets().set(0, 5, 0, 5);
+		addProfileBtn.setForeground(UIFrame.TEXT_LIGHT);
+		addProfileBtn.setBackground(UIFrame.PRIMARY_MAIN);
+		addProfileBtn.setOpaque(true);
+		addProfileBtn.setFocusPainted(false);
+		topBar.add(addProfileBtn);
+
+		JLabel profileLabel = new JLabel("Profile:");
+		profileLabel.setForeground(UIFrame.TEXT_PRIMARY);
+		topBar.add(profileLabel);
+
+		Profile[] profs = ProfileManager.getProfiles().toArray(new Profile[0]);
+		profilesComboBox = new JComboBox<>(profs);
+		int index = 0;
+		for(int i = 0; i < profs.length; i++)
+		{
+			if(profs[i].getName().equals(ProfileManager.getCurrentProfile().getName()))
+			{
+				index = i;
+				break;
+			}
+		}
+		profilesComboBox.setSelectedIndex(index);
+		profilesComboBox.addItemListener((e) ->
+		{
+			Profile prof = (Profile) e.getItem();
+			if(prof.equals(ProfileManager.getCurrentProfile()))
+				return;
+			ProfileManager.setCurrentProfile(prof);
+			Config.saveProfiles();
+			updateSim();
+			ConnectionManager.getCurrentConnection().updatePiDisplay();
+			setInfoPanelButton(null);
+			columnsSpinner.setValue(prof.getColumns());
+			rowsSpinner.setValue(prof.getRows());
+		});
+		topBar.add(profilesComboBox);
+
+		JButton addPiDeckBtn = new JButton("Add");
+		addPiDeckBtn.setUI(new MetalButtonUI());
+		addPiDeckBtn.addActionListener(e -> new AddProfileFrame(this));
+		addPiDeckBtn.getInsets().set(0, 5, 0, 5);
+		addPiDeckBtn.setForeground(UIFrame.TEXT_LIGHT);
+		addPiDeckBtn.setBackground(UIFrame.PRIMARY_MAIN);
+		addPiDeckBtn.setOpaque(true);
+		addPiDeckBtn.setFocusPainted(false);
+		topBar.add(addPiDeckBtn);
+
 		JLabel rowsLabel = new JLabel("Rows");
 		rowsLabel.setForeground(UIFrame.TEXT_PRIMARY);
 		topBar.add(rowsLabel);
-		JSpinner rows = new JSpinner(new SpinnerNumberModel(2, 1, 10, 1));
-		rows.setBackground(UIFrame.BACKGROUND_SECONDARY);
-		rows.setForeground(UIFrame.TEXT_PRIMARY);
-		rows.addChangeListener(e ->
+		rowsSpinner = new JSpinner(new SpinnerNumberModel(ProfileManager.getCurrentProfile().getRows(), 1, 10, 1));
+		rowsSpinner.setBackground(UIFrame.BACKGROUND_SECONDARY);
+		rowsSpinner.setForeground(UIFrame.TEXT_PRIMARY);
+		rowsSpinner.addChangeListener(e ->
 		{
-			simScreen.setRows((int) ((JSpinner) e.getSource()).getModel().getValue());
+			simScreen.setRows((int) rowsSpinner.getModel().getValue());
 		});
-		rows.setSize(100, 25);
-		topBar.add(rows);
+		rowsSpinner.setSize(100, 25);
+		topBar.add(rowsSpinner);
 
 		JLabel colsLabel = new JLabel("Columns");
 		colsLabel.setForeground(UIFrame.TEXT_PRIMARY);
 		topBar.add(colsLabel);
-		JSpinner columns = new JSpinner(new SpinnerNumberModel(4, 1, 10, 1));
-		columns.setBackground(UIFrame.BACKGROUND_SECONDARY);
-		columns.setForeground(UIFrame.TEXT_PRIMARY);
-		columns.addChangeListener(e ->
+		columnsSpinner = new JSpinner(new SpinnerNumberModel(ProfileManager.getCurrentProfile().getColumns(), 1, 10, 1));
+		columnsSpinner.setBackground(UIFrame.BACKGROUND_SECONDARY);
+		columnsSpinner.setForeground(UIFrame.TEXT_PRIMARY);
+		columnsSpinner.addChangeListener(e ->
 		{
-			simScreen.setColumns((int) ((JSpinner) e.getSource()).getModel().getValue());
+			simScreen.setColumns((int) columnsSpinner.getModel().getValue());
 		});
-		columns.setSize(100, 25);
-		topBar.add(columns);
+		columnsSpinner.setSize(100, 25);
+		topBar.add(columnsSpinner);
 
 		JButton saveBtn = new JButton("SAVE");
 		saveBtn.setUI(new MetalButtonUI());
-		saveBtn.addActionListener(e -> Core.getPiDeck().updatePiDisplay());
+		saveBtn.addActionListener(e -> ConnectionManager.getCurrentConnection().updatePiDisplay());
 		saveBtn.getInsets().set(0, 5, 0, 5);
 		saveBtn.setForeground(UIFrame.TEXT_LIGHT);
 		saveBtn.setBackground(UIFrame.PRIMARY_MAIN);
@@ -108,7 +165,7 @@ public class UIFrame extends JFrame
 				int i = JOptionPane.showConfirmDialog(null, "Are you sure you want to close?");
 				if(i == 0)
 				{
-					Core.getPiDeck().close();
+					ConnectionManager.getCurrentConnection().close();
 					System.exit(0);
 				}
 			}
@@ -123,7 +180,7 @@ public class UIFrame extends JFrame
 			MenuItem defaultItem = new MenuItem("Exit");
 			defaultItem.addActionListener(e ->
 			{
-				Core.getPiDeck().close();
+				ConnectionManager.getCurrentConnection().close();
 				System.exit(0);
 			});
 			popup.add(defaultItem);
@@ -185,6 +242,11 @@ public class UIFrame extends JFrame
 	{
 		infoPanel.setInfoPanelButton(ProfileManager.getCurrentProfile().getButtonFromID(buttonID));
 		sp.resetToPreferredSizes();
+	}
+
+	public void refreshProfilesComboBox()
+	{
+		profilesComboBox.setModel(new DefaultComboBoxModel<>(ProfileManager.getProfiles().toArray(new Profile[0])));
 	}
 
 	public void updateSim()
