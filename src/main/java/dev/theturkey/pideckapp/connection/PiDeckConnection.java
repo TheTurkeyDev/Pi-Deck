@@ -4,13 +4,13 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import dev.theturkey.pideckapp.Util;
+import dev.theturkey.pideckapp.config.Config;
 import dev.theturkey.pideckapp.profile.Button;
 import dev.theturkey.pideckapp.profile.Profile;
 import dev.theturkey.pideckapp.profile.ProfileManager;
 import jssc.SerialPort;
 import jssc.SerialPortException;
 
-import java.io.File;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -67,8 +67,17 @@ public class PiDeckConnection
 								pong.addProperty("event", "pong");
 								sendMessage(pong);
 								break;
+							case "request_img":
+								String imageId = json.get("id").getAsString();
+								JsonObject response = new JsonObject();
+								response.addProperty("event", "respond_img");
+								response.addProperty("btn_id", json.get("btn_id").getAsString());
+								response.addProperty("id", imageId);
+								response.addProperty("image", Util.imageToBase64(Config.getSavedImageFile(imageId)));
+								sendMessage(response);
+								break;
 							default:
-								System.out.println(msg);
+								System.out.println("Unknown Message: " + json.toString());
 								break;
 						}
 					}
@@ -131,11 +140,7 @@ public class PiDeckConnection
 		json.addProperty("id", btn.getID());
 		json.addProperty("color", btn.getBgColor());
 		json.addProperty("text", btn.getText());
-		File file = new File(btn.getImageSrc());
-		if(file.exists())
-			json.addProperty("image", Util.imageToBase64(file));
-		else
-			json.addProperty("image", "");
+		json.addProperty("image", btn.getImageSrc());
 		json.addProperty("x", btn.getX());
 		json.addProperty("y", btn.getY());
 		sendMessage(json);

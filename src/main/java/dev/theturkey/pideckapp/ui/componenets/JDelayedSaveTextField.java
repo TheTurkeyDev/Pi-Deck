@@ -1,4 +1,6 @@
-package dev.theturkey.pideckapp.ui;
+package dev.theturkey.pideckapp.ui.componenets;
+
+import dev.theturkey.pideckapp.ui.UIFrame;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;

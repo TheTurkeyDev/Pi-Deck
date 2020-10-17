@@ -3,6 +3,7 @@ package dev.theturkey.pideckapp.action;
 import dev.theturkey.pideckapp.integrations.IAID;
 import dev.theturkey.pideckapp.integrations.IIntegration;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,16 +11,13 @@ import java.util.stream.Collectors;
 
 public class ActionsManager
 {
+	private static final Map<String, IIntegration> INTEGRATIONS = new HashMap<>();
 	private static final Map<IAID, BaseAction> ACTIONS = new HashMap<>();
 
 	public static void registerAction(IIntegration integration, String actionID, BaseAction action)
 	{
-		registerAction(integration.getType(), actionID, action);
-	}
-
-	public static void registerAction(String integration, String actionID, BaseAction action)
-	{
-		ACTIONS.put(new IAID(integration, actionID), action);
+		INTEGRATIONS.putIfAbsent(integration.getType(), integration);
+		ACTIONS.put(new IAID(integration.getType(), actionID), action);
 	}
 
 	public static BaseAction getAction(String integration, String actionID)
@@ -38,9 +36,14 @@ public class ActionsManager
 	}
 
 
+	public static IIntegration getIntegrationFromId(String id)
+	{
+		return INTEGRATIONS.get(id);
+	}
+
 	public static List<String> getAllIntegration()
 	{
-		return ACTIONS.keySet().stream().map(iaid -> iaid.integrationID).distinct().collect(Collectors.toList());
+		return new ArrayList<>(INTEGRATIONS.keySet());
 	}
 
 	public static List<String> getAllActions(String integrationID)

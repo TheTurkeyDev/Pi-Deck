@@ -1,8 +1,9 @@
-package dev.theturkey.pideckapp.ui;
+package dev.theturkey.pideckapp.ui.subframes;
 
 import dev.theturkey.pideckapp.config.Config;
 import dev.theturkey.pideckapp.profile.Profile;
 import dev.theturkey.pideckapp.profile.ProfileManager;
+import dev.theturkey.pideckapp.ui.UIFrame;
 
 import javax.swing.*;
 import javax.swing.plaf.metal.MetalButtonUI;

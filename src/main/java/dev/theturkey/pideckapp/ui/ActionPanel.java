@@ -5,8 +5,10 @@ import dev.theturkey.pideckapp.config.Config;
 import dev.theturkey.pideckapp.integrations.ActionProperty;
 import dev.theturkey.pideckapp.profile.ActionInfo;
 import dev.theturkey.pideckapp.profile.Button;
+import dev.theturkey.pideckapp.ui.componenets.JDelayedSaveTextField;
 
 import javax.swing.*;
+import javax.swing.plaf.metal.MetalButtonUI;
 import java.awt.*;
 import java.io.File;
 
@@ -31,6 +33,10 @@ public class ActionPanel extends JPanel
 		JButton removeBtn = new JButton();
 		removeBtn.setPreferredSize(new Dimension(20, 16));
 		removeBtn.setIcon(Util.getScaledImage(new ImageIcon(Util.getRes("icons/x_mark.png")), 16, 16));
+		removeBtn.setBackground(UIFrame.BACKGROUND_SECONDARY);
+		removeBtn.setUI(new MetalButtonUI());
+		removeBtn.setOpaque(true);
+		removeBtn.setFocusPainted(false);
 		removeBtn.addActionListener(e ->
 		{
 			btn.removeAction(action);
@@ -125,6 +131,14 @@ public class ActionPanel extends JPanel
 							action.setPropsValue(prop.key, selectedFile.getPath());
 							Config.saveProfiles();
 						}
+					});
+					break;
+				case DROP_DOWN:
+					component = new JComboBox<>(prop.values);
+					((JComboBox<?>) component).addItemListener(e ->
+					{
+						action.setPropsValue(prop.key, (String) e.getItem());
+						Config.saveProfiles();
 					});
 					break;
 				default:

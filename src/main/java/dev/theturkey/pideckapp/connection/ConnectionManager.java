@@ -24,6 +24,11 @@ public class ConnectionManager
 		PIDECKS.put(portName, pideck);
 	}
 
+	public static boolean isConnected()
+	{
+		return PIDECKS.size() > 0;
+	}
+
 	public static PiDeckConnection getCurrentConnection()
 	{
 		return PIDECKS.get(currentPiDeck);

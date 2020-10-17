@@ -2,6 +2,7 @@ package dev.theturkey.pideckapp;
 
 import dev.theturkey.pideckapp.config.Config;
 import dev.theturkey.pideckapp.integrations.IOIntegration;
+import dev.theturkey.pideckapp.integrations.MiscIntegration;
 import dev.theturkey.pideckapp.integrations.TwitchIntegration;
 import dev.theturkey.pideckapp.profile.ProfileManager;
 import dev.theturkey.pideckapp.ui.UIFrame;
@@ -24,6 +25,8 @@ public class Core
 		ioIntegration.load();
 		TwitchIntegration twitchIntegration = new TwitchIntegration();
 		twitchIntegration.load();
+		MiscIntegration miscIntegration = new MiscIntegration();
+		miscIntegration.load();
 		ProfileManager.loadProfiles();
 
 		try

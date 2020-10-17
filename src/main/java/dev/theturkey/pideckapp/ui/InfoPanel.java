@@ -7,11 +7,16 @@ import dev.theturkey.pideckapp.config.Config;
 import dev.theturkey.pideckapp.connection.ConnectionManager;
 import dev.theturkey.pideckapp.profile.ActionInfo;
 import dev.theturkey.pideckapp.profile.Button;
+import dev.theturkey.pideckapp.ui.componenets.JDelayedSaveTextField;
+import dev.theturkey.pideckapp.ui.subframes.ImageSelectFrame;
+import dev.theturkey.pideckapp.ui.subframes.IntegrationsFrame;
 
 import javax.swing.*;
 import javax.swing.plaf.metal.MetalButtonUI;
 import java.awt.*;
 import java.io.File;
+
+import static javax.swing.BorderFactory.createEmptyBorder;
 
 public class InfoPanel extends JPanel
 {
@@ -22,7 +27,7 @@ public class InfoPanel extends JPanel
 	private JButton bgImageButton;
 	private JTextField buttonTextInput;
 
-	private JPanel actionsPanel;
+	private JPanel actionsPanelActions;
 
 
 	public InfoPanel()
@@ -42,6 +47,7 @@ public class InfoPanel extends JPanel
 
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridy = 0;
+		gbc.weightx = 1;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		add(titlePanel, gbc);
 
@@ -67,18 +73,18 @@ public class InfoPanel extends JPanel
 			{
 				bgColorButton.setBackground(newColor);
 				currentBtn.setBgColor(newColor);
-				ConnectionManager.getCurrentConnection().updateButton(currentBtn);
+				if(ConnectionManager.isConnected())
+					ConnectionManager.getCurrentConnection().updateButton(currentBtn);
 				Core.getUI().updateSim();
 				Config.saveProfiles();
 			}
 		});
 		colorPanel.add(bgColorButton);
 
-		colorPanel.setMaximumSize(getSize());
-
 		gbc = new GridBagConstraints();
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.gridy = 1;
+		gbc.weightx = 1;
 		add(colorPanel, gbc);
 
 		JPanel imagePanel = new JPanel();
@@ -98,29 +104,23 @@ public class InfoPanel extends JPanel
 			if(currentBtn == null)
 				return;
 
-			JFileChooser fileChooser = new JFileChooser();
-			JFrame popup = new JFrame();
-			int result = fileChooser.showOpenDialog(popup);
-			if(result == JFileChooser.APPROVE_OPTION)
-			{
-				File selectedFile = fileChooser.getSelectedFile();
-				bgImageButton.setIcon(Util.getScaledImage(selectedFile.getPath(), 16, 16));
-				currentBtn.setImageSrc(selectedFile.getPath());
-				ConnectionManager.getCurrentConnection().updateButton(currentBtn);
-				Core.getUI().updateSim();
-				Config.saveProfiles();
-			}
+			new ImageSelectFrame(this);
 		});
 		imagePanel.add(bgImageButton);
 
 		JButton removeImageButton = new JButton();
 		removeImageButton.setPreferredSize(new Dimension(20, 16));
 		removeImageButton.setIcon(Util.getScaledImage(new ImageIcon(Util.getRes("icons/x_mark.png")), 16, 16));
+		removeImageButton.setBackground(UIFrame.BACKGROUND_SECONDARY);
+		removeImageButton.setUI(new MetalButtonUI());
+		removeImageButton.setOpaque(true);
+		removeImageButton.setFocusPainted(false);
 		removeImageButton.addActionListener(e ->
 		{
 			bgImageButton.setIcon(null);
 			currentBtn.setImageSrc("");
-			ConnectionManager.getCurrentConnection().updateButton(currentBtn);
+			if(ConnectionManager.isConnected())
+				ConnectionManager.getCurrentConnection().updateButton(currentBtn);
 			Core.getUI().updateSim();
 			Config.saveProfiles();
 		});
@@ -129,6 +129,7 @@ public class InfoPanel extends JPanel
 		gbc = new GridBagConstraints();
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.gridy = 2;
+		gbc.weightx = 1;
 		add(imagePanel, gbc);
 
 
@@ -142,7 +143,8 @@ public class InfoPanel extends JPanel
 		{
 			if(currentBtn.getImageSrc().isEmpty())
 				currentBtn.setText(text);
-			ConnectionManager.getCurrentConnection().updateButton(currentBtn);
+			if(ConnectionManager.isConnected())
+				ConnectionManager.getCurrentConnection().updateButton(currentBtn);
 			Core.getUI().updateSim();
 			Config.saveProfiles();
 		});
@@ -152,17 +154,11 @@ public class InfoPanel extends JPanel
 		buttonTextInput.setPreferredSize(new Dimension(100, 25));
 		textInputPanel.add(buttonTextInput);
 
-		textInputPanel.setMaximumSize(getSize());
-
 		gbc = new GridBagConstraints();
 		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.weightx = 1;
 		gbc.gridy = 3;
 		add(textInputPanel, gbc);
-
-
-		actionsPanel = new JPanel();
-		actionsPanel.setLayout(new BoxLayout(actionsPanel, BoxLayout.Y_AXIS));
-		actionsPanel.setBackground(UIFrame.BACKGROUND_PRIMARY);
 
 		JPanel actionsPanelTopBar = new JPanel();
 		actionsPanelTopBar.setBackground(UIFrame.BACKGROUND_PRIMARY);
@@ -179,22 +175,27 @@ public class InfoPanel extends JPanel
 		addAction.setFocusPainted(false);
 		addAction.addActionListener(e -> new IntegrationsFrame(this, currentBtn));
 		actionsPanelTopBar.add(addAction);
-
-		actionsPanel.add(actionsPanelTopBar);
-
 		gbc = new GridBagConstraints();
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.weightx = 1;
 		gbc.gridy = 4;
-		add(actionsPanel, gbc);
+		add(actionsPanelTopBar, gbc);
 
-		JPanel fill = new JPanel();
-		fill.setBackground(UIFrame.BACKGROUND_SECONDARY);
+		actionsPanelActions = new JPanel();
+		actionsPanelActions.setLayout(new BoxLayout(actionsPanelActions, BoxLayout.PAGE_AXIS));
+		actionsPanelActions.setBackground(UIFrame.BACKGROUND_PRIMARY);
+
+		JScrollPane pane = new JScrollPane(actionsPanelActions,
+				ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		pane.setBorder(createEmptyBorder());
+
 		gbc = new GridBagConstraints();
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.gridy = 5;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.weightx = 1;
 		gbc.weighty = 1;
-		add(fill, gbc);
+		gbc.gridy = 5;
+		add(pane, gbc);
 	}
 
 
@@ -207,11 +208,11 @@ public class InfoPanel extends JPanel
 
 			buttonTextInput.setText(button.getText());
 			bgColorButton.setBackground(Util.hex2Rgb(button.getBgColor()));
-			bgImageButton.setIcon(Util.getScaledImage(button.getImageSrc(), 32, 32));
+			bgImageButton.setIcon(Util.getScaledImage(Config.getSavedImageFile(button.getImageSrc()).getPath(), 32, 32));
 
 			updateActionsPanel();
 
-			setPreferredSize(new Dimension(150, getHeight()));
+			setPreferredSize(new Dimension(200, getHeight()));
 			setVisible(true);
 		}
 		else
@@ -224,13 +225,30 @@ public class InfoPanel extends JPanel
 		updateUI();
 	}
 
+	public void setCurrentButtonImage(File selectedFile)
+	{
+		if(currentBtn == null)
+			return;
+
+		bgImageButton.setIcon(Util.getScaledImage(selectedFile.getPath(), 16, 16));
+		currentBtn.setImageSrc(selectedFile.getName());
+		if(ConnectionManager.isConnected())
+			ConnectionManager.getCurrentConnection().updateButton(currentBtn);
+		Core.getUI().updateSim();
+		Config.saveProfiles();
+	}
+
 	public void updateActionsPanel()
 	{
-		for(int i = actionsPanel.getComponentCount() - 1; i >= 0; i--)
-			if(actionsPanel.getComponent(i) instanceof ActionPanel)
-				actionsPanel.remove(i);
+		for(int i = actionsPanelActions.getComponentCount() - 1; i >= 0; i--)
+			if(actionsPanelActions.getComponent(i) instanceof ActionPanel || actionsPanelActions.getComponent(i) instanceof Box.Filler)
+				actionsPanelActions.remove(i);
 
+		actionsPanelActions.add(Box.createVerticalStrut(5));
 		for(ActionInfo action : currentBtn.getActions())
-			actionsPanel.add(new ActionPanel(this, currentBtn, action));
+		{
+			actionsPanelActions.add(new ActionPanel(this, currentBtn, action));
+			actionsPanelActions.add(Box.createVerticalStrut(5));
+		}
 	}
 }

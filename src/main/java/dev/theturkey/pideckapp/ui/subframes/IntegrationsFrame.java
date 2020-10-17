@@ -1,15 +1,20 @@
-package dev.theturkey.pideckapp.ui;
+package dev.theturkey.pideckapp.ui.subframes;
 
 import dev.theturkey.pideckapp.Util;
 import dev.theturkey.pideckapp.action.ActionsManager;
 import dev.theturkey.pideckapp.config.Config;
+import dev.theturkey.pideckapp.integrations.IIntegration;
 import dev.theturkey.pideckapp.profile.ActionInfo;
 import dev.theturkey.pideckapp.profile.Button;
+import dev.theturkey.pideckapp.ui.InfoPanel;
+import dev.theturkey.pideckapp.ui.UIFrame;
 import dev.theturkey.pideckapp.ui.layouts.WrapLayout;
 
 import javax.swing.*;
 import javax.swing.plaf.metal.MetalButtonUI;
 import java.awt.*;
+
+import static javax.swing.BorderFactory.createEmptyBorder;
 
 public class IntegrationsFrame extends JFrame
 {
@@ -34,7 +39,8 @@ public class IntegrationsFrame extends JFrame
 
 			JPanel actionsPanel = new JPanel();
 
-			JButton intBtn = new JButton();
+			IIntegration iIntegration = ActionsManager.getIntegrationFromId(integration);
+			JButton intBtn = new JButton(iIntegration != null ? iIntegration.getDisplay() : "ERROR");
 			intBtn.setForeground(UIFrame.TEXT_PRIMARY);
 			intBtn.setUI(new MetalButtonUI());
 			intBtn.setBackground(UIFrame.BACKGROUND_SECONDARY);
@@ -100,7 +106,11 @@ public class IntegrationsFrame extends JFrame
 		spacer.setBackground(UIFrame.BACKGROUND_PRIMARY);
 		panel.add(spacer, gbc);
 
-		add(panel, BorderLayout.CENTER);
+		JScrollPane pane = new JScrollPane(panel,
+				ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		pane.setBorder(createEmptyBorder());
+		add(pane, BorderLayout.CENTER);
 
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setLocationRelativeTo(null);

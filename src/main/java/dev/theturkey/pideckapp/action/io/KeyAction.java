@@ -175,6 +175,10 @@ public class KeyAction extends BaseAction
 				return VK_SLASH;
 			case " ":
 				return VK_SPACE;
+			case "ctrl":
+				return VK_CONTROL;
+			case "shift":
+				return VK_SHIFT;
 			case "f1":
 				return VK_F1;
 			case "f2":

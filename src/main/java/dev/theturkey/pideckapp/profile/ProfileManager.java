@@ -79,4 +79,9 @@ public class ProfileManager
 	{
 		currentProfile = profile;
 	}
+
+	public static Profile getProfileFromName(String name)
+	{
+		return PROFILES.get(name);
+	}
 }

@@ -2,6 +2,7 @@ package dev.theturkey.pideckapp.ui;
 
 import dev.theturkey.pideckapp.Core;
 import dev.theturkey.pideckapp.Util;
+import dev.theturkey.pideckapp.config.Config;
 import dev.theturkey.pideckapp.profile.Button;
 
 import javax.swing.*;
@@ -21,7 +22,8 @@ public class ActionButton extends JPanel
 		setPreferredSize(new Dimension(1, 1));
 		getInsets().set(0, 0, 0, 0);
 
-		JButton button = btn.getImageSrc().isEmpty() || !(new File(btn.getImageSrc())).exists() ? new JButton(btn.getText()) : new JButton();
+		File buttonIconFile = Config.getSavedImageFile(btn.getImageSrc());
+		JButton button = btn.getImageSrc().isEmpty() || !buttonIconFile.exists() ? new JButton(btn.getText()) : new JButton();
 		button.setUI(new MetalButtonUI());
 		button.setBackground(Util.hex2Rgb(btn.getBgColor()));
 		button.setFocusPainted(false);
@@ -42,7 +44,7 @@ public class ActionButton extends JPanel
 				else
 					size.height = -1;
 
-				button.setIcon(Util.getScaledImage(btn.getImageSrc(), size.width, size.height));
+				button.setIcon(Util.getScaledImage(buttonIconFile.getPath(), size.width, size.height));
 			}
 		});
 

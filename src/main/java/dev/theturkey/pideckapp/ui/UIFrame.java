@@ -5,6 +5,8 @@ import dev.theturkey.pideckapp.config.Config;
 import dev.theturkey.pideckapp.connection.ConnectionManager;
 import dev.theturkey.pideckapp.profile.Profile;
 import dev.theturkey.pideckapp.profile.ProfileManager;
+import dev.theturkey.pideckapp.ui.subframes.AddProfileFrame;
+import dev.theturkey.pideckapp.ui.subframes.PiDeckConnectFrame;
 
 import javax.swing.*;
 import javax.swing.plaf.metal.MetalButtonUI;
@@ -71,15 +73,7 @@ public class UIFrame extends JFrame
 		profilesComboBox.addItemListener((e) ->
 		{
 			Profile prof = (Profile) e.getItem();
-			if(prof.equals(ProfileManager.getCurrentProfile()))
-				return;
-			ProfileManager.setCurrentProfile(prof);
-			Config.saveProfiles();
-			updateSim();
-			ConnectionManager.getCurrentConnection().updatePiDisplay();
-			setInfoPanelButton(null);
-			columnsSpinner.setValue(prof.getColumns());
-			rowsSpinner.setValue(prof.getRows());
+			switchProfile(prof.getName());
 		});
 		topBar.add(profilesComboBox);
 
@@ -165,7 +159,8 @@ public class UIFrame extends JFrame
 				int i = JOptionPane.showConfirmDialog(null, "Are you sure you want to close?");
 				if(i == 0)
 				{
-					ConnectionManager.getCurrentConnection().close();
+					if(ConnectionManager.isConnected())
+						ConnectionManager.getCurrentConnection().close();
 					System.exit(0);
 				}
 			}
@@ -253,5 +248,21 @@ public class UIFrame extends JFrame
 	{
 		//TODO: This is gross and very not efficient
 		simScreen.setupButtons();
+	}
+
+	public void switchProfile(String profile)
+	{
+		Profile prof = ProfileManager.getProfileFromName(profile);
+		if(prof == null || prof.equals(ProfileManager.getCurrentProfile()))
+			return;
+
+		ProfileManager.setCurrentProfile(prof);
+		Config.saveProfiles();
+		updateSim();
+		if(ConnectionManager.isConnected())
+			ConnectionManager.getCurrentConnection().updatePiDisplay();
+		setInfoPanelButton(null);
+		columnsSpinner.setValue(prof.getColumns());
+		rowsSpinner.setValue(prof.getRows());
 	}
 }
